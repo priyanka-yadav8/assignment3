@@ -2,7 +2,7 @@ import express from "express";
 import dotenv from "dotenv";
 import { errorHandler } from "./middleware/errorMiddleware.js";
 import stockDetailsRoutes from "./routes/stockDetailsRoutes.js";
-
+import watchlistRoutes from "./routes/watchlistRoutes.js";
 const app = express();
 dotenv.config();
 
@@ -14,6 +14,7 @@ app.get("/", (req, res) => {
 });
 
 app.use("/api/stocks",stockDetailsRoutes);
+app.use("/api/watchlist", watchlistRoutes);
 
 app.use(errorHandler);
 

@@ -64,20 +64,108 @@ const get_hourly_charts_data = async(symbol,market_status) => {
     return filtered_charts_data;
 };
 
-const get_company_news = asyncHandler(async(symbol)=>{
-    const toDate = new Date();
-    const fromDate = new Date();
-    fromDate.setDate(toDate.getDate() - 2);
-    const formattedToDate = formatDate(toDate);
-    const formattedFromDate = formatDate(fromDate);
-    const company_news_url = `https://finnhub.io/api/v1/company-news?symbol=${symbol}&from=${formattedFromDate}&to=${formattedToDate}&token=${FINNHUB_API_KEY}`;
-    const company_news_data = await axios.get(company_news_url);
+const getCompanyNews = asyncHandler(async(req, res)=>{
+    const { symbol } = req.body;
+    try {
+        const toDate = new Date();
+        const fromDate = new Date();
+        fromDate.setDate(toDate.getDate() - 2);
+        const formattedToDate = formatDate(toDate);
+        const formattedFromDate = formatDate(fromDate);
+        const company_news_url = `https://finnhub.io/api/v1/company-news?symbol=${symbol}&from=${formattedFromDate}&to=${formattedToDate}&token=${FINNHUB_API_KEY}`;
+        const company_news_data = await axios.get(company_news_url);
 
-    return company_news_data.data;
+        const filteredNewsData = company_news_data.data.filter(article => {
+            const requiredKeys = ['image', 'url', 'headline', 'datetime', 'source', 'summary'];
+            return requiredKeys.every(key => article[key] !== undefined && article[key] !== null && article[key] !== '');
+        });
+
+        const response = filteredNewsData.slice(0, 20);
+        console.log(response.length,"length");
+    
+        res.status(200).json(response);
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Failed to retrieve company news details", error: error.message });
+    }
 
 });
 
-const stockDetails = asyncHandler( async (req,res) => {
+const getInsights = asyncHandler(async(req, res)=>{
+    const { symbol } = req.body;
+    try {
+        const insider_sentiments_url = `https://finnhub.io/api/v1/stock/insider-sentiment?symbol=${symbol}&from=2022-01-01&&token=${FINNHUB_API_KEY}`;
+        let insider_sentiment_data = await axios.get(insider_sentiments_url);
+        // console.log(insider_sentiment_data.data.data);
+
+        const aggregates = insider_sentiment_data.data.data.reduce(
+            (acc, item) => {
+              // Aggregate total mspr
+              acc.total_mspr += item.mspr;
+              // Aggregate positive mspr
+              if (item.mspr > 0) acc.positive_mspr += item.mspr;
+              // Aggregate negative mspr
+              if (item.mspr < 0) acc.negative_mspr += item.mspr;
+              // Aggregate total change
+              acc.total_change += item.change;
+              // Aggregate positive change
+              if (item.change > 0) acc.positive_change += item.change;
+              // Aggregate negative change
+              if (item.change < 0) acc.negative_change += item.change;
+              
+              return acc;
+            },
+            {
+              total_mspr: 0,
+              positive_mspr: 0,
+              negative_mspr: 0,
+              total_change: 0,
+              positive_change: 0,
+              negative_change: 0
+            }
+        );
+          
+        // Round off all aggregates to 2 decimal places
+        const roundedAggregates = Object.keys(aggregates).reduce((acc, key) => {
+            acc[key] = Number(aggregates[key].toFixed(2));
+            return acc;
+        }, {});
+        // console.log(roundedAggregates);
+
+
+        const recommendation_trends_url = `https://finnhub.io/api/v1/stock/recommendation?symbol=${symbol}&token=${FINNHUB_API_KEY}`;
+        const recommendation_trends_data = await axios.get(recommendation_trends_url);
+        // console.log(recommendation_trends_data.data);
+
+        const company_earnings_url = `https://finnhub.io/api/v1/stock/earnings?symbol=${symbol}&token=${FINNHUB_API_KEY}`;
+        const company_earnings_data = await axios.get(company_earnings_url);
+        // console.log(company_earnings_data.data);
+
+        const updated_earnings_data = company_earnings_data.data.map(earning => ({
+            ...earning,
+            actual: earning.actual ?? 0,
+            estimate: earning.estimate ?? 0,
+            surprise: earning.surprise ?? 0,
+            surprisePercent: earning.surprisePercent ?? 0,
+        }));
+
+        const response_obj = {
+            "insider_sentiments": roundedAggregates,
+            "recommendation_trends": recommendation_trends_data.data,
+            "company_earnings_data": updated_earnings_data
+        }
+        
+
+        res.status(200).send(response_obj);
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Failed to retrieve company insider sentiments", error: error.message });
+    }
+});
+
+const getStockDetails = asyncHandler( async (req,res) => {
     const { symbol } = req.body;
     console.log(symbol);
     try {
@@ -139,9 +227,7 @@ const stockDetails = asyncHandler( async (req,res) => {
 
         const filtered_charts_data= await get_hourly_charts_data(symbol,market_status);
 
-        const filtered_company_news_data = await get_company_news(symbol);
-        console.log(filtered_company_news_data);
-        console.log(filtered_company_news_data.length);
+       
 
 
 
@@ -184,4 +270,4 @@ const stockDetails = asyncHandler( async (req,res) => {
 
 
 
-export {stockDetails};
+export {getStockDetails, getCompanyNews, getInsights};
