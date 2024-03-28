@@ -28,7 +28,7 @@ function App() {
                   element={<Navigate replace to="/search/home" />}
                 />
                 <Route path="/search/home" element={<HomePage />} />
-                <Route path="/search/:ticker" element={<SearchDetails />} />
+                <Route path="/search/:tickerSymbol" element={<SearchDetails />} />
                 <Route path="/watchlist" element={<Watchlist />} />
                 <Route path="/portfolio" element={<Portfolio />} />
               </Routes>

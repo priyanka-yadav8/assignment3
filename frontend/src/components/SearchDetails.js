@@ -5,7 +5,7 @@ import { WatchlistContext } from "../contexts/WatchlistContext";
 import { Box, Tab, Tabs } from "@mui/material";
 import TabPanel from "@mui/lab/TabPanel";
 import TabContext from "@mui/lab/TabContext";
-// import IconButton from "@mui/material/IconButton";
+import { Link } from "react-router-dom";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import axios from "axios";
 import "../App.css";
@@ -26,7 +26,7 @@ const SearchDetails = () => {
   };
 
   const iconStyle = {
-    color: starFill ? "yellow" : "currentColor", // If starFill is true, color is yellow, else use the current color
+    color: starFill ? "yellow" : "currentColor", 
     cursor: "pointer", // Change cursor to pointer to indicate the icon is clickable
   };
 
@@ -78,12 +78,16 @@ const SearchDetails = () => {
 
   // useEffect to make the API calls when the component mounts or the ticker changes
   useEffect(() => {
-    if (ticker && ticker !== tickerSymbol) {
-      if (tickerSymbol && tickerSymbol !== ticker) {
+    console.log(ticker,"ticker");
+    console.log(tickerSymbol,"tickerSymbol");
+    if (ticker !== tickerSymbol) {
+      // if (tickerSymbol && tickerSymbol !== ticker) {
+        console.log("hi")
         setTicker(tickerSymbol);
         updateStockData(tickerSymbol);
-      }
+      // }
     }
+    console.log(ticker,"ticker after");
 
     const updateTime = () => {
       const now = new Date();
@@ -264,7 +268,41 @@ const SearchDetails = () => {
                 </Tabs>
               </Box>
               <TabPanel value="one" index={0}>
-                <div>Stock Summary Data Goes Here</div>
+                <div className="container">
+                  <div className="row">
+                    <div className="col-lg-6 col-md-6 col-sm-12">
+                      <div className="row text-center">
+                        <div className="col-lg-6 col-md-6 col-sm-12 col-sm-12 col-xs-12">
+                          <div><b>High Price : </b>{stockDetails.summary.high_price}</div>
+                          <div><b>Low Price : </b>{stockDetails.summary.low_price}</div>
+                          <div><b>Open Price : </b>{stockDetails.summary.open_price}</div>
+                          <div><b>Prev. Price : </b>{stockDetails.summary.prev_close}</div>
+                        </div>
+                      </div>
+                      <div className="row text-center my-5">
+                        <div className="col-12">
+                          <h5><u>About the Company</u></h5>
+                          <div className="my-4">
+                            <div><b>IPO Start Date : </b>{stockDetails.company_details.ipo_start_date}</div>
+                            <div className="my-2"><b>Industry : </b>{stockDetails.company_details.industry}</div>
+                            <div className="my-2"><b>Webpage : </b><a href={stockDetails.company_details.webpage}>{stockDetails.company_details.webpage}</a></div>
+                            <div className="my-2"><b>Company Peers : </b></div>
+                            <div className="my-2">
+                              {stockDetails.company_details.company_peers.map((ticker, index) => (
+                                  <span key={ticker}>
+                                    <Link to={`/search/${ticker}`}>{ticker}</Link>
+                                    {index < stockDetails.company_details.company_peers.length - 1 ? ', ' : ''}
+                                  </span>
+                              )
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                        
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </TabPanel>
               <TabPanel value="two" index={1}>
                 <div>Top News Data Goes Here</div>
