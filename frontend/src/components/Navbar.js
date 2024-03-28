@@ -3,7 +3,7 @@ import { NavLink } from 'react-router-dom';
 
 const Navbar = () => {
     const getNavLinkClass = ({ isActive }) => {
-        console.log(isActive, "isactive")
+        // console.log(isActive, "isactive")
         return isActive ? "nav-link border border-light rounded text-white" : "nav-link text-white";
       };
     

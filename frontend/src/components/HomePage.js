@@ -1,15 +1,18 @@
 // HomePage.js
 
 import React, { useState } from "react";
+import { useStockData } from '../contexts/StockDataContext';
 import { useNavigate } from "react-router-dom";
 
 const HomePage = () => {
-  const [ticker, setTicker] = useState("");
+  const [tickerSymbol, setTickerSymbol] = useState("");
+  const { updateStockData } = useStockData();
   const navigate = useNavigate();
 
-  const handleSearch = (event) => {
+  const handleSearch = async (event) => {
     event.preventDefault();
-    navigate(`/search/${ticker}`);
+    await updateStockData(tickerSymbol);
+    navigate(`/search/${tickerSymbol}`);
   };
 
   return (
@@ -26,16 +29,16 @@ const HomePage = () => {
               className="form-control"
               placeholder="Enter stock ticker symbol"
               aria-label="Enter stock ticker symbol"
-              value={ticker}
-              onChange={(e) => setTicker(e.target.value)}
+              value={tickerSymbol}
+              onChange={(e) => setTickerSymbol(e.target.value)}
             />
-            <button className="btn btn-outline-primary" type="submit">
+            <button className="btn btn-primary" type="submit">
               <i className="bi bi-search"></i>
             </button>
             <button
-              className="btn btn-outline-secondary"
+              className="btn btn-secondary"
               type="button"
-              onClick={() => setTicker("")}
+              onClick={() => setTickerSymbol("")}
             >
               <i className="bi bi-x-lg"></i>
             </button>

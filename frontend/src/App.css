@@ -131,3 +131,11 @@ footer {
   flex-shrink: 0;
 }
 
+.redChange {
+  color: red!important;
+}
+
+.greenChange {
+  color: green!important;
+}
+

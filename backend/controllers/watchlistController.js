@@ -14,12 +14,12 @@ const fetchStockData = async(symbol)=> {
         const { ticker, name } = stock_profile_response.data;
   
         // Fetch stock quote
-        const stock_quote_url = `https://finnhub.io/api/v1/quote?symbol=${symbol}&token=${FINNHUB_API_KEY}`;
-        const stock_quote_response = await axios.get(stock_quote_url);
-        const { c, d, dp } = stock_quote_response.data;
+        // const stock_quote_url = `https://finnhub.io/api/v1/quote?symbol=${symbol}&token=${FINNHUB_API_KEY}`;
+        // const stock_quote_response = await axios.get(stock_quote_url);
+        // const { c, d, dp } = stock_quote_response.data;
   
         // Combine the data
-        return { ticker, name, c, d, dp };
+        return { ticker, name };
       } catch (error) {
         console.error(`Error fetching data for ${symbol}:`, error);
       }

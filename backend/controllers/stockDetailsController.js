@@ -178,6 +178,7 @@ const getStockDetails = asyncHandler( async (req,res) => {
         let stock_quote_response = await axios.get(stock_quote_url);
         console.log(stock_quote_response.data);
         let {c, d, dp, t, h, l, o, pc} = stock_quote_response.data;
+        dp = parseFloat(dp.toFixed(2));
 
         const company_peers_url = `https://finnhub.io/api/v1/stock/peers?symbol=${symbol}&token=${FINNHUB_API_KEY}`;
         let company_peers_reponse = await axios.get(company_peers_url);
@@ -227,10 +228,6 @@ const getStockDetails = asyncHandler( async (req,res) => {
 
         const filtered_charts_data= await get_hourly_charts_data(symbol,market_status);
 
-       
-
-
-
         const res_obj = {
             "stock_details" : {
                 "ticker": ticker,
@@ -268,6 +265,28 @@ const getStockDetails = asyncHandler( async (req,res) => {
    
 });
 
+const getStocksQuote = asyncHandler( async(req, res) => {
+    try {
+        const { symbol } = req.body;
+        const stock_quote_url = `https://finnhub.io/api/v1/quote?symbol=${symbol}&token=${FINNHUB_API_KEY}`;
+        let stock_quote_response = await axios.get(stock_quote_url);
+        console.log(stock_quote_response.data);
+        let {c, d, dp} = stock_quote_response.data;
+        dp = parseFloat(dp.toFixed(2));
+        const responseObj = {
+            "last_price": c,
+            "change": d,
+            "change_percentage": dp,
+        };
+        res.status(200).json(responseObj);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Failed to retrieve stock quote data", error: error.message });
+    }
+    
+
+})
 
 
-export {getStockDetails, getCompanyNews, getInsights};
+
+export {getStockDetails, getCompanyNews, getInsights, getStocksQuote};
