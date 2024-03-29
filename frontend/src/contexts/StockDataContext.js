@@ -10,6 +10,16 @@ export const StockDataProvider = ({ children }) => {
   const [companyNews, setCompanyNews] = useState(null);
   const [insights, setInsights] = useState(null);
   const [ticker, setTicker] = useState("");
+  const [strongBuy, setStrongBuy] = useState(null);
+  const [strongSell, setStrongSell] = useState(null);
+  const [buy, setBuy] = useState(null);
+  const [sell, setSell] = useState(null);
+  const [hold, setHold] = useState(null);
+  const [period, setPeriod] = useState(null);
+  const [actual, setActual] = useState(null);
+  const [estimate, setEstimate] = useState(null);
+  const [period2, setPeriod2] = useState(null);
+  const [surprise, setSurprise] = useState(null);
 
   // Method to update data
   const updateStockData = async (tickerSymbol) => {
@@ -48,6 +58,19 @@ export const StockDataProvider = ({ children }) => {
       requestOptions
     );
     const insightsData = await insightsResponse.json();
+    const recommendation_trends = insightsData.recommendation_trends;
+    const company_earnings_data = insightsData.company_earnings_data;
+    setStrongBuy(recommendation_trends.map((item) => item.strongBuy));
+    setStrongSell(recommendation_trends.map((item) => item.strongSell));
+    setSell(recommendation_trends.map((item) => item.sell));
+    setBuy(recommendation_trends.map((item) => item.buy));
+    setHold(recommendation_trends.map((item) => item.hold));
+    setPeriod(recommendation_trends.map((item) => item.period));
+    setActual(company_earnings_data.map((item) => item.actual));
+    setEstimate(company_earnings_data.map((item) => item.estimate));
+    setPeriod2(company_earnings_data.map((item) => item.period));
+    setSurprise(company_earnings_data.map((item) => item.surprise));
+
     setInsights(insightsData);
   };
 
@@ -63,6 +86,26 @@ export const StockDataProvider = ({ children }) => {
     stockQuote,
     setStockQuote,
     updateStockData,
+    strongBuy,
+    setStrongBuy,
+    strongSell,
+    setStrongSell,
+    buy,
+    setBuy,
+    sell,
+    setSell,
+    hold,
+    setHold,
+    period,
+    setPeriod,
+    actual,
+    setActual,
+    estimate,
+    setEstimate,
+    period2,
+    setPeriod2,
+    surprise,
+    setSurprise,
   };
 
   return (

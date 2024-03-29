@@ -67,7 +67,8 @@ const get_hourly_charts_data = async (symbol, market_status) => {
 };
 
 const getCompanyNews = asyncHandler(async (req, res) => {
-  const { symbol } = req.body;
+  let { symbol } = req.body;
+  symbol = symbol.toUpperCase();
   try {
     const toDate = new Date();
     const fromDate = new Date();
@@ -100,17 +101,16 @@ const getCompanyNews = asyncHandler(async (req, res) => {
     res.status(200).json(response);
   } catch (error) {
     console.error(error);
-    res
-      .status(500)
-      .json({
-        message: "Failed to retrieve company news details",
-        error: error.message,
-      });
+    res.status(500).json({
+      message: "Failed to retrieve company news details",
+      error: error.message,
+    });
   }
 });
 
 const getInsights = asyncHandler(async (req, res) => {
-  const { symbol } = req.body;
+  let { symbol } = req.body;
+  symbol = symbol.toUpperCase();
   try {
     const insider_sentiments_url = `https://finnhub.io/api/v1/stock/insider-sentiment?symbol=${symbol}&from=2022-01-01&&token=${FINNHUB_API_KEY}`;
     let insider_sentiment_data = await axios.get(insider_sentiments_url);
@@ -177,17 +177,16 @@ const getInsights = asyncHandler(async (req, res) => {
     res.status(200).send(response_obj);
   } catch (error) {
     console.error(error);
-    res
-      .status(500)
-      .json({
-        message: "Failed to retrieve company insider sentiments",
-        error: error.message,
-      });
+    res.status(500).json({
+      message: "Failed to retrieve company insider sentiments",
+      error: error.message,
+    });
   }
 });
 
 const getStockDetails = asyncHandler(async (req, res) => {
-  const { symbol } = req.body;
+  let { symbol } = req.body;
+  symbol = symbol.toUpperCase();
   console.log(symbol);
   try {
     const stock_profile_url = `https://finnhub.io/api/v1/stock/profile2?symbol=${symbol}&token=${FINNHUB_API_KEY}`;
@@ -208,7 +207,11 @@ const getStockDetails = asyncHandler(async (req, res) => {
 
     const company_peers_url = `https://finnhub.io/api/v1/stock/peers?symbol=${symbol}&token=${FINNHUB_API_KEY}`;
     let company_peers_response = await axios.get(company_peers_url);
-    let unique_peers = [...new Set(company_peers_response.data.filter((peer) => !peer.includes(".")))];
+    let unique_peers = [
+      ...new Set(
+        company_peers_response.data.filter((peer) => !peer.includes("."))
+      ),
+    ];
     let company_peers = unique_peers;
     console.log(company_peers, "peers data");
 
@@ -294,18 +297,17 @@ const getStockDetails = asyncHandler(async (req, res) => {
     res.status(200).json(res_obj);
   } catch (error) {
     console.error(error);
-    res
-      .status(500)
-      .json({
-        message: "Failed to retrieve stock details",
-        error: error.message,
-      });
+    res.status(500).json({
+      message: "Failed to retrieve stock details",
+      error: error.message,
+    });
   }
 });
 
 const getStocksQuote = asyncHandler(async (req, res) => {
   try {
-    const { symbol } = req.body;
+    let { symbol } = req.body;
+    symbol = symbol.toUpperCase();
     const stock_quote_url = `https://finnhub.io/api/v1/quote?symbol=${symbol}&token=${FINNHUB_API_KEY}`;
     let stock_quote_response = await axios.get(stock_quote_url);
     console.log(stock_quote_response.data);
@@ -319,13 +321,48 @@ const getStocksQuote = asyncHandler(async (req, res) => {
     res.status(200).json(responseObj);
   } catch (error) {
     console.error(error);
-    res
-      .status(500)
-      .json({
-        message: "Failed to retrieve stock quote data",
-        error: error.message,
-      });
+    res.status(500).json({
+      message: "Failed to retrieve stock quote data",
+      error: error.message,
+    });
   }
 });
 
-export { getStockDetails, getCompanyNews, getInsights, getStocksQuote };
+const autoComplete = asyncHandler(async (req, res) => {
+  try {
+    let { ticker } = req.params;
+    console.log(ticker, "ticker");
+    ticker = ticker.toUpperCase();
+    const autocomplete_url = `https://finnhub.io/api/v1/search?q=${ticker}&token=${FINNHUB_API_KEY}`;
+    let autocomplete_response = await axios.get(autocomplete_url);
+    // console.log(autocomplete_response.data.result, "dataaaaaaa");
+    const filteredResult = autocomplete_response.data.result
+      .filter(
+        (item) => item.type === "Common Stock" && !item.symbol.includes(".")
+      )
+      .map((item) => ({
+        description: item.description,
+        symbol: item.symbol,
+      }));
+
+    console.log(filteredResult,"dataaaa");
+    res.status(200).json({
+      "results" : filteredResult
+    });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      message: "Failed to retrieve autocomplete data",
+      error: error.message,
+    });
+  }
+});
+
+export {
+  getStockDetails,
+  getCompanyNews,
+  getInsights,
+  getStocksQuote,
+  autoComplete,
+};

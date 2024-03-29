@@ -139,3 +139,36 @@ footer {
   color: green!important;
 }
 
+/* Home.css */
+.autocomplete-container {
+  position: relative;
+  width: 100%;
+  max-width: 500px; /* Adjust the width as necessary */
+  margin: auto;
+}
+
+.autocomplete-input {
+  border-radius: 20px 0 0 20px;
+}
+
+.autocomplete-results {
+  position: absolute;
+  width: calc(100% - 48px); /* Adjust width based on search button width */
+  top: 100%;
+  left: 0;
+  z-index: 1000;
+  border-radius: 0 0 5px 5px;
+  overflow: hidden;
+  box-shadow: 0 4px 6px rgba(32,33,36,0.28);
+}
+
+.list-group-item {
+  border: none;
+  border-radius: 0;
+  padding: 10px 20px;
+  cursor: pointer;
+}
+
+.list-group-item:hover {
+  background-color: #f8f9fa;
+}
