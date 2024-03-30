@@ -1,33 +1,50 @@
 import React, { useEffect, useState } from "react";
-import { useStockData } from '../contexts/StockDataContext';
-import { useNavigate } from "react-router-dom";
+import { useStockData } from "../contexts/StockDataContext";
+import { useNavigate, useParams } from "react-router-dom";
 
 const HomePage = () => {
   const [tickerSymbol, setTickerSymbol] = useState("");
   const [suggestions, setSuggestions] = useState([]);
-  const { updateStockData } = useStockData();
+  const { updateStockData, ticker, setTicker } = useStockData();
   const navigate = useNavigate();
+  const { tickerSymbolParam } = useParams();
 
   const handleSearch = async (event) => {
     event.preventDefault();
-    await updateStockData(tickerSymbol);
+    // setTickerSymbol(tickerSymbol);
+
+    // await setTicker(tickerSymbol);
+    // await updateStockData(tickerSymbol);
     navigate(`/search/${tickerSymbol}`);
   };
 
   const handleSearchSelect = async (symbol) => {
     setTickerSymbol(symbol);
-    await updateStockData(symbol);
-    navigate(`/search/${symbol}`);
+    // await setTicker(symbol);
 
-  }
+    // await updateStockData(symbol);
+    navigate(`/search/${symbol}`);
+  };
 
   useEffect(() => {
-    if(tickerSymbol.length > 0){
+    setTickerSymbol(tickerSymbolParam);
+  }, [tickerSymbolParam]);
+
+  useEffect(() => {
+    if (
+      tickerSymbol &&
+      tickerSymbol.length > 0 &&
+      tickerSymbol != tickerSymbolParam
+    ) {
+      console.log("Ticker Symbol" + tickerSymbol);
+      console.log("Ticker Symbol Param" + tickerSymbolParam);
       const fetchSuggestions = async () => {
         try {
-          const response = await fetch(`http://localhost:5000/api/stocks/autocomplete/${tickerSymbol}`);
+          const response = await fetch(
+            `http://localhost:5000/api/stocks/autocomplete/${tickerSymbol}`
+          );
           const responseData = await response.json();
-          console.log(responseData.results,"response auto");
+          console.log(responseData.results, "response auto");
           setSuggestions(responseData.results || []);
         } catch (error) {
           console.error("Error fetching autocomplete suggestions:", error);
@@ -38,6 +55,7 @@ const HomePage = () => {
     } else {
       setSuggestions([]);
     }
+    // setTickerSymbol(tickerSymbolParam);
   }, [tickerSymbol]);
 
   return (
@@ -59,21 +77,17 @@ const HomePage = () => {
             />
             {suggestions.length > 0 && (
               <ul className="list-group autocomplete-results">
-                {
-                  suggestions.map((suggestion, index) => (
-                    <li
-                      key={index}
-                      className="list-group-item"
-                      onClick={()=> handleSearchSelect(suggestion.symbol)}
-                    >
-                      {suggestion.symbol} | {suggestion.description}
-                    </li>
-                  ))
-                }
+                {suggestions.map((suggestion, index) => (
+                  <li
+                    key={index}
+                    className="list-group-item"
+                    onClick={() => handleSearchSelect(suggestion.symbol)}
+                  >
+                    {suggestion.symbol} | {suggestion.description}
+                  </li>
+                ))}
               </ul>
-            )
-
-            }
+            )}
             <button className="btn" type="submit">
               <i className="bi bi-search"></i>
             </button>

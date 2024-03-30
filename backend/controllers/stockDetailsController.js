@@ -68,7 +68,7 @@ const get_hourly_charts_data = async (symbol, market_status) => {
     c: item.c,
     t: item.t,
   }));
-  console.log(filtered_charts_data);
+  // console.log(filtered_charts_data);
   return filtered_charts_data;
 };
 
@@ -100,7 +100,7 @@ const getCompanyNews = asyncHandler(async (req, res) => {
           article[key] !== ""
       );
     });
-    console.log(filteredNewsData,"filteredNewsData")
+    console.log("filteredNewsData")
     const response = filteredNewsData.slice(0, 20);
     // console.log(response.length, "length");
     filteredNewsData.forEach(item => {
@@ -182,7 +182,7 @@ const getInsights = asyncHandler(async (req, res) => {
       recommendation_trends: recommendation_trends_data.data,
       company_earnings_data: updated_earnings_data,
     };
-
+    console.log("insightssss")
     res.status(200).send(response_obj);
   } catch (error) {
     console.error(error);
@@ -200,13 +200,14 @@ const getStockDetails = asyncHandler(async (req, res) => {
   try {
     const stock_profile_url = `https://finnhub.io/api/v1/stock/profile2?symbol=${symbol}&token=${FINNHUB_API_KEY}`;
     let stock_profile_response = await axios.get(stock_profile_url);
-    console.log(stock_profile_response.data);
+    // console.log(stock_profile_response.data);
+    console.log("stock detailsss");
     let { ticker, name, exchange, logo, ipo, finnhubIndustry, weburl } =
       stock_profile_response.data;
 
     const stock_quote_url = `https://finnhub.io/api/v1/quote?symbol=${symbol}&token=${FINNHUB_API_KEY}`;
     let stock_quote_response = await axios.get(stock_quote_url);
-    console.log(stock_quote_response.data);
+    // console.log(stock_quote_response.data);
     let { c, d, dp, t, h, l, o, pc } = stock_quote_response.data;
     dp = parseFloat(dp.toFixed(2));
     pc = parseFloat(pc.toFixed(2));
@@ -319,7 +320,8 @@ const getStocksQuote = asyncHandler(async (req, res) => {
     symbol = symbol.toUpperCase();
     const stock_quote_url = `https://finnhub.io/api/v1/quote?symbol=${symbol}&token=${FINNHUB_API_KEY}`;
     let stock_quote_response = await axios.get(stock_quote_url);
-    console.log(stock_quote_response.data);
+    // console.log(stock_quote_response.data);
+    console.log("stock quotee")
     let { c, d, dp } = stock_quote_response.data;
     dp = parseFloat(dp.toFixed(2));
     const responseObj = {
@@ -340,7 +342,7 @@ const getStocksQuote = asyncHandler(async (req, res) => {
 const autoComplete = asyncHandler(async (req, res) => {
   try {
     let { ticker } = req.params;
-    console.log(ticker, "ticker");
+    // console.log(ticker, "ticker");
     ticker = ticker.toUpperCase();
     const autocomplete_url = `https://finnhub.io/api/v1/search?q=${ticker}&token=${FINNHUB_API_KEY}`;
     let autocomplete_response = await axios.get(autocomplete_url);

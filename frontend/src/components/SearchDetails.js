@@ -13,6 +13,8 @@ import Highcharts from "highcharts";
 import HighchartsReact from "highcharts-react-official";
 import { IoMdArrowDropup, IoMdArrowDropdown } from "react-icons/io";
 import DisplayNews from "./DisplayNews";
+import HomePage from "./HomePage";
+import Spinner from "react-bootstrap/Spinner";
 
 <head>
   <script src="https://code.highcharts.com/highcharts.js"></script>
@@ -22,12 +24,14 @@ import DisplayNews from "./DisplayNews";
 </head>;
 
 const SearchDetails = () => {
-  const { tickerSymbol } = useParams();
+  const { tickerSymbolParam } = useParams();
   const navigate = useNavigate();
   const [starFill, setStarFill] = useState(false);
   const [time, setTime] = useState("");
   const [val, setVal] = useState("one");
   const [dataFetchedBoolean, setDataFetchedBoolean] = useState(false);
+  const [loadingState, setLoadingState] = useState(true);
+  const [combinedCategories, setCombinedCategories] = useState(null);
 
   const handleTab = (e, newVal) => {
     setVal(newVal);
@@ -50,7 +54,7 @@ const SearchDetails = () => {
     setCompanyNews,
     insights,
     setInsights,
-    updateStockData,
+    // updateStockData,
     ticker,
     setTicker,
     stockQuote,
@@ -80,6 +84,72 @@ const SearchDetails = () => {
     price,
     setPrice,
   } = useStockData();
+
+
+  const updateStockData = async (tickerSymbol) => {
+    const requestOptions = {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ symbol: tickerSymbol }),
+    };
+
+    // Fetch and update stock details
+    const stockDetailsResponse = await fetch(
+      "http://localhost:5000/api/stocks/get-stock-details",
+      requestOptions
+    );
+    const stockDetailsData = await stockDetailsResponse.json();
+    const hourly_charts_data = stockDetailsData.hourly_charts_data;
+    setHours(hourly_charts_data.map((item) => item.t));
+    setPrice(hourly_charts_data.map((item) => item.c));
+    setStockDetails(stockDetailsData);
+
+    const stockQuoteResponse = await fetch(
+      "http://localhost:5000/api/stocks/get-stock-quote",
+      requestOptions
+    );
+    const stockQuoteData = await stockQuoteResponse.json();
+    setStockQuote(stockQuoteData);
+
+    // Fetch and update company news
+    const companyNewsResponse = await fetch(
+      "http://localhost:5000/api/stocks/get-company-news",
+      requestOptions
+    );
+    const companyNewsData = await companyNewsResponse.json();
+    setCompanyNews(companyNewsData);
+    // console.log(companyNewsData,"companyNewsData");
+
+    // Fetch and update insights
+    const insightsResponse = await fetch(
+      "http://localhost:5000/api/stocks/get-insights",
+      requestOptions
+    );
+    const insightsData = await insightsResponse.json();
+    setInsights(insightsData);
+
+    const recommendation_trends = insightsData.recommendation_trends;
+    const company_earnings_data = insightsData.company_earnings_data;
+    setStrongBuy(recommendation_trends.map((item) => item.strongBuy));
+    setStrongSell(recommendation_trends.map((item) => item.strongSell));
+    setSell(recommendation_trends.map((item) => item.sell));
+    setBuy(recommendation_trends.map((item) => item.buy));
+    setHold(recommendation_trends.map((item) => item.hold));
+    setPeriod(recommendation_trends.map((item) => item.period));
+    setActual(company_earnings_data.map((item) => item.actual));
+    setEstimate(company_earnings_data.map((item) => item.estimate));
+    setPeriod2(company_earnings_data.map((item) => item.period));
+    setSurprise(company_earnings_data.map((item) => item.surprise));
+
+    const period2_dummy = company_earnings_data.map((item)=>item.period);
+    const surprise_dummy = company_earnings_data.map((item)=>item.surprise);
+    var combinedCat = company_earnings_data.map( function (item, index) {
+      return item.period + "<br> Surprise: " + item.surprise;
+    });
+    setCombinedCategories(combinedCat);
+    
+    setLoadingState(false);
+  };
 
   // setTicker(tickerSymbol);
   // setStockDetails(stockDetails);
@@ -115,10 +185,11 @@ const SearchDetails = () => {
   // useEffect to make the API calls when the component mounts or the ticker changes
   useEffect(() => {
     console.log(ticker, "ticker");
-    console.log(tickerSymbol, "tickerSymbol");
-    if (ticker !== tickerSymbol) {
-      setTicker(tickerSymbol);
-      updateStockData(tickerSymbol);
+    console.log(tickerSymbolParam, "tickerSymbol");
+    if (ticker !== tickerSymbolParam) {
+      setTicker(tickerSymbolParam);
+      updateStockData(tickerSymbolParam);
+      
     }
     console.log(ticker, "ticker after");
 
@@ -136,7 +207,7 @@ const SearchDetails = () => {
 
     // Cleanup interval on component unmount
     return () => clearInterval(intervalId);
-  }, [tickerSymbol, ticker, setTicker, updateStockData]);
+  }, [tickerSymbolParam, ticker, setTicker, updateStockData]);
 
   // Function to handle search submission
   const handleSearch = (searchTicker) => {
@@ -229,9 +300,9 @@ const SearchDetails = () => {
     ],
   };
 
-  var combinedCategories = period2.map(function (period, index) {
-    return period + "<br> Surprise: " + surprise[index];
-  });
+  // var combinedCategories = period2.map(function (period, index) {
+  //   return period + "<br> Surprise: " + surprise[index];
+  // });
   const earningsChart = {
     chart: {
       type: "spline",
@@ -348,38 +419,11 @@ const SearchDetails = () => {
     },
   };
 
-  return (
+  return loadingState ? (
+    <Spinner />
+  ) : (
     <div>
-      <div className="container my-5">
-        {/* Title */}
-        <h2 className="text-center my-4">STOCK SEARCH</h2>
-
-        {/* Search Bar */}
-        <div className="row justify-content-center">
-          <div className="col-12 col-md-6">
-            <form className="input-group" onSubmit={handleSearch}>
-              <input
-                type="text"
-                className="form-control"
-                placeholder="Enter stock ticker symbol"
-                aria-label="Enter stock ticker symbol"
-                value={ticker}
-                onChange={(e) => setTicker(e.target.value)}
-              />
-              <button className="btn btn-outline-primary" type="submit">
-                <i className="bi bi-search"></i>
-              </button>
-              <button
-                className="btn btn-outline-secondary"
-                type="button"
-                onClick={() => setTicker("")}
-              >
-                <i className="bi bi-x-lg"></i>
-              </button>
-            </form>
-          </div>
-        </div>
-      </div>
+      <HomePage />
       <div className="container my-5 text-center">
         <div className="row align-items-center">
           <div className="col-4">
@@ -417,7 +461,12 @@ const SearchDetails = () => {
               {stockQuote.last_price}
             </h2>
             <h4 className={changeColorDisplay(stockQuote.change)}>
-              {stockQuote.change>0 ? <IoMdArrowDropup /> : <IoMdArrowDropdown />}{stockQuote.change} ({stockQuote.change_percentage} %)
+              {stockQuote.change > 0 ? (
+                <IoMdArrowDropup />
+              ) : (
+                <IoMdArrowDropdown />
+              )}
+              {stockQuote.change} ({stockQuote.change_percentage} %)
             </h4>
             <p>{time}</p>
           </div>
@@ -581,10 +630,11 @@ const SearchDetails = () => {
                       <table class="table">
                         <thead>
                           <tr>
-                            <th scope="col">{stockDetails.stock_details.name}</th>
+                            <th scope="col">
+                              {stockDetails.stock_details.name}
+                            </th>
                             <th scope="col">MSPR</th>
                             <th scope="col">Change</th>
-                            
                           </tr>
                         </thead>
                         <tbody>
@@ -592,19 +642,20 @@ const SearchDetails = () => {
                             <th scope="row">Total</th>
                             <td>{insights.insider_sentiments.total_mspr}</td>
                             <td>{insights.insider_sentiments.total_change}</td>
-                           
                           </tr>
                           <tr>
                             <th scope="row">Positive</th>
                             <td>{insights.insider_sentiments.positive_mspr}</td>
-                            <td>{insights.insider_sentiments.positive_change}</td>
-                           
+                            <td>
+                              {insights.insider_sentiments.positive_change}
+                            </td>
                           </tr>
                           <tr>
                             <th scope="row">Negative</th>
                             <td>{insights.insider_sentiments.negative_mspr}</td>
-                            <td>{insights.insider_sentiments.negative_change}</td>
-                           
+                            <td>
+                              {insights.insider_sentiments.negative_change}
+                            </td>
                           </tr>
                         </tbody>
                       </table>
