@@ -67,6 +67,7 @@ const Portfolio = () => {
       requestOptions
     );
     if (updateWalletRes.status == 200) {
+      console.log("wallet update success");
       setWallet(new_Wallet);
     }
 
@@ -80,7 +81,7 @@ const Portfolio = () => {
         }),
       };
       const portfolioPatchRes = await fetch(
-        "http://localhost:5000/api/portfolio/get-portfolio",
+        `http://localhost:5000/api/portfolio/update-portfolio/${stock.ticker}`,
         requestOptions
       );
       const portfolioPatchData = await portfolioPatchRes.data;

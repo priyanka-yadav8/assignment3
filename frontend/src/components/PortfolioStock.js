@@ -22,7 +22,7 @@ const PortfolioStock = ({ data, wallet, buy, sell }) => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    console.log(data, "data in list");
+    // console.log(data, "data in list");
     const fetchStockQuote = async () => {
       console.log(data, "data in list");
 
