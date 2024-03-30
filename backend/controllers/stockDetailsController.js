@@ -1,5 +1,6 @@
 import asyncHandler from "express-async-handler";
 import axios from "axios";
+// import datetime from datetime;
 
 const FINNHUB_API_KEY = "cn0qd0pr01quegsk27sgcn0qd0pr01quegsk27t0";
 
@@ -14,6 +15,11 @@ const getPreviousWeekday = (date) => {
     date.setDate(date.getDate() - 1);
   }
   return date;
+};
+
+const convertUnixToReadable = (unixTimestamp) => {
+  const date = new Date(unixTimestamp * 1000);
+  return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
 };
 
 // Function to format date
@@ -94,9 +100,12 @@ const getCompanyNews = asyncHandler(async (req, res) => {
           article[key] !== ""
       );
     });
-
+    console.log(filteredNewsData,"filteredNewsData")
     const response = filteredNewsData.slice(0, 20);
-    console.log(response.length, "length");
+    // console.log(response.length, "length");
+    filteredNewsData.forEach(item => {
+      item.datetime = convertUnixToReadable(item.datetime);
+    });
 
     res.status(200).json(response);
   } catch (error) {
@@ -213,8 +222,8 @@ const getStockDetails = asyncHandler(async (req, res) => {
       ),
     ];
     let company_peers = unique_peers;
-    console.log(company_peers, "peers data");
-
+    // console.log(company_peers, "peers data");
+    console.log(t,"ttttttt");
     //converting t to required format
     const date = new Date(t * 1000);
     const formattedDate =
@@ -229,7 +238,7 @@ const getStockDetails = asyncHandler(async (req, res) => {
       ("0" + date.getMinutes()).slice(-2) +
       ":" +
       ("0" + date.getSeconds()).slice(-2);
-    console.log(t, "t");
+    // console.log(t, "t");
 
     // Get the current date and time
     const now = new Date();

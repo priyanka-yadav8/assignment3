@@ -20,6 +20,8 @@ export const StockDataProvider = ({ children }) => {
   const [estimate, setEstimate] = useState(null);
   const [period2, setPeriod2] = useState(null);
   const [surprise, setSurprise] = useState(null);
+  const [hours, setHours] = useState(null);
+  const [price, setPrice] = useState(null);
 
   // Method to update data
   const updateStockData = async (tickerSymbol) => {
@@ -35,6 +37,9 @@ export const StockDataProvider = ({ children }) => {
       requestOptions
     );
     const stockDetailsData = await stockDetailsResponse.json();
+    const hourly_charts_data = stockDetailsData.hourly_charts_data;
+    setHours(hourly_charts_data.map((item) => item.t));
+    setPrice(hourly_charts_data.map((item) => item.c));
     setStockDetails(stockDetailsData);
 
     const stockQuoteResponse = await fetch(
@@ -51,6 +56,7 @@ export const StockDataProvider = ({ children }) => {
     );
     const companyNewsData = await companyNewsResponse.json();
     setCompanyNews(companyNewsData);
+    // console.log(companyNewsData,"companyNewsData");
 
     // Fetch and update insights
     const insightsResponse = await fetch(
@@ -106,6 +112,10 @@ export const StockDataProvider = ({ children }) => {
     setPeriod2,
     surprise,
     setSurprise,
+    hours,
+    setHours,
+    price,
+    setPrice,
   };
 
   return (

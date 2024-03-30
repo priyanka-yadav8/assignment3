@@ -11,6 +11,9 @@ import axios from "axios";
 import "../App.css";
 import Highcharts from "highcharts";
 import HighchartsReact from "highcharts-react-official";
+import { IoMdArrowDropup, IoMdArrowDropdown } from "react-icons/io";
+import DisplayNews from "./DisplayNews";
+
 <head>
   <script src="https://code.highcharts.com/highcharts.js"></script>
   <script src="https://code.highcharts.com/modules/exporting.js"></script>
@@ -72,6 +75,10 @@ const SearchDetails = () => {
     setPeriod2,
     surprise,
     setSurprise,
+    hours,
+    setHours,
+    price,
+    setPrice,
   } = useStockData();
 
   // setTicker(tickerSymbol);
@@ -283,6 +290,64 @@ const SearchDetails = () => {
     ],
   };
 
+  const summaryCharts = {
+    title: {
+      text: `${ticker} Hourly Price Variation`,
+      align: "center",
+    },
+    xAxis: {
+      categories: hours,
+      tickInterval: 5,
+      tickWidth: 1, // Set the tick line width
+      tickLength: 10, // Set the length of the tick marks
+      tickColor: "#666",
+    },
+    plotOptions: {
+      series: {
+        label: {
+          connectorAllowed: false,
+        },
+        pointStart: 3,
+      },
+    },
+    yAxis: {
+      title: {
+        text: "", // Removes the 'Values' title from the y-axis
+      },
+      opposite: true, // Moves the y-axis to the right side
+    },
+    legend: {
+      layout: "vertical",
+      align: "right",
+      verticalAlign: "middle",
+      enabled: false, // Hides the legend
+    },
+    series: [
+      {
+        data: price,
+        marker: {
+          enabled: false,
+        },
+      },
+    ],
+    responsive: {
+      rules: [
+        {
+          condition: {
+            maxWidth: 500,
+          },
+          chartOptions: {
+            legend: {
+              layout: "horizontal",
+              align: "center",
+              verticalAlign: "bottom",
+            },
+          },
+        },
+      ],
+    },
+  };
+
   return (
     <div>
       <div className="container my-5">
@@ -352,7 +417,7 @@ const SearchDetails = () => {
               {stockQuote.last_price}
             </h2>
             <h4 className={changeColorDisplay(stockQuote.change)}>
-              {stockQuote.change} ({stockQuote.change_percentage} %)
+              {stockQuote.change>0 ? <IoMdArrowDropup /> : <IoMdArrowDropdown />}{stockQuote.change} ({stockQuote.change_percentage} %)
             </h4>
             <p>{time}</p>
           </div>
@@ -491,25 +556,68 @@ const SearchDetails = () => {
                         </div>
                       </div>
                     </div>
+                    <div className="col-lg-6 col-md-6 col-sm-12">
+                      <HighchartsReact
+                        highcharts={Highcharts}
+                        options={summaryCharts}
+                      />
+                    </div>
                   </div>
                 </div>
               </TabPanel>
               <TabPanel value="two" index={1}>
-                <div>Top News Data Goes Here</div>
+                <div className="container my-5">
+                  <DisplayNews companyNews={companyNews} />
+                </div>
               </TabPanel>
               <TabPanel value="three" index={2}>
                 <div>Charts Data Goes Here</div>
               </TabPanel>
               <TabPanel value="four" index={3}>
                 <div className="container">
+                  <div className="row my-5 text-center mx-5">
+                    <div className="col-12 justify-content-center">
+                      <h3>Insider Sentiments</h3>
+                      <table class="table">
+                        <thead>
+                          <tr>
+                            <th scope="col">{stockDetails.stock_details.name}</th>
+                            <th scope="col">MSPR</th>
+                            <th scope="col">Change</th>
+                            
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr>
+                            <th scope="row">Total</th>
+                            <td>{insights.insider_sentiments.total_mspr}</td>
+                            <td>{insights.insider_sentiments.total_change}</td>
+                           
+                          </tr>
+                          <tr>
+                            <th scope="row">Positive</th>
+                            <td>{insights.insider_sentiments.positive_mspr}</td>
+                            <td>{insights.insider_sentiments.positive_change}</td>
+                           
+                          </tr>
+                          <tr>
+                            <th scope="row">Negative</th>
+                            <td>{insights.insider_sentiments.negative_mspr}</td>
+                            <td>{insights.insider_sentiments.negative_change}</td>
+                           
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
                   <div className="row my-5">
-                    <div className="col-6">
+                    <div className="col-lg-6 col-md-6 col-sm-12 col-xs-12">
                       <HighchartsReact
                         highcharts={Highcharts}
                         options={insightChart}
                       />
                     </div>
-                    <div className="col-6">
+                    <div className="col-lg-6 col-md-6 col-sm-12 col-xs-12">
                       <HighchartsReact
                         highcharts={Highcharts}
                         options={earningsChart}

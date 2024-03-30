@@ -1,11 +1,13 @@
 import React from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useParams } from 'react-router-dom';
 
 const Navbar = () => {
     const getNavLinkClass = ({ isActive }) => {
         // console.log(isActive, "isactive")
         return isActive ? "nav-link border border-light rounded text-white" : "nav-link text-white";
-      };
+    };
+
+    const {tickerSymbol} = useParams();
     
 
     return (
@@ -23,7 +25,7 @@ const Navbar = () => {
             <div className="collapse navbar-collapse justify-content-end" id="navbarNav">
             <ul className="navbar-nav">
                 <li className="nav-item">
-                <NavLink className={getNavLinkClass} to="/search/home">Search</NavLink>
+                <NavLink className={getNavLinkClass} to={tickerSymbol ? `/search/${tickerSymbol}` : `/search/home`}>Search</NavLink>
                 </li>
                 <li className="nav-item">
                 <NavLink className={getNavLinkClass} to="/watchlist">Watchlist</NavLink>

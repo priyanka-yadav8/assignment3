@@ -4,6 +4,8 @@ import cors from "cors";
 import { errorHandler } from "./middleware/errorMiddleware.js";
 import stockDetailsRoutes from "./routes/stockDetailsRoutes.js";
 import watchlistRoutes from "./routes/watchlistRoutes.js";
+import portfolioRoutes from "./routes/portfolioRoutes.js";
+
 const app = express();
 dotenv.config();
 
@@ -17,6 +19,7 @@ app.get("/", (req, res) => {
 
 app.use("/api/stocks",stockDetailsRoutes);
 app.use("/api/watchlist", watchlistRoutes);
+app.use("/api/portfolio",portfolioRoutes);
 
 app.use(errorHandler);
 

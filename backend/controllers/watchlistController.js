@@ -70,11 +70,13 @@ const addToWatchlist = asyncHandler(async(req,res)=>{
         const doc = { "stock": symbol };
         const result = await watchlist.insertOne(doc);
 
-        res.status(201).json({message : `${symbol} added to Watchlist`});
+        res.status(200).json({message : `${symbol} added to Watchlist`});
 
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: `Failed to add ${symbol} to Watchlist`, error: error.message });
+    } finally{
+        await client.close();
     }
 });
 
@@ -98,6 +100,8 @@ const removeFromWatchlist = asyncHandler(async(req,res)=>{
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: `Failed to delete ${symbol} from Watchlist`, error: error.message });
+    } finally{
+        await client.close();
     }
 });
 
