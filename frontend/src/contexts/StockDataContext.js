@@ -1,8 +1,24 @@
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useContext, useReducer, useState } from "react";
 
 const StockDataContext = createContext();
 
 export const useStockData = () => useContext(StockDataContext);
+
+// export const stockReducer = (state, action) => {
+//   if(action.type == "GET_WATCHLIST"){
+//     return{
+//       portfolio: wnpState.portfolio,
+//       watchlist: action.payload,
+//       wallet: wnpState.wallet
+//     }
+//   } else if(action.type == "ADD_WATCHLIST"){
+//     return{
+//       portfolio: wnpState.portfolio,
+//       watchlist: [action.payload, ...wnpState.watchlist],
+//       wallet: wnpState.wallet
+//     }
+//   }
+// }
 
 export const StockDataProvider = ({ children }) => {
   const [stockDetails, setStockDetails] = useState(null);
@@ -25,6 +41,15 @@ export const StockDataProvider = ({ children }) => {
   const [historicData, setHistoricData] = useState(null);
   const [ohlc, setOhlc] = useState(null);
   const [volume, setVolume] = useState(null);
+
+  // const [wnpState, dispatch] = useReducer(
+  //   appReducer,
+  //   {
+  //     watchlist : null,
+  //     portfolio:null,
+  //     wallet:null
+  //   }
+  // )
 
   // Method to update data
 
@@ -70,6 +95,8 @@ export const StockDataProvider = ({ children }) => {
     setOhlc,
     volume,
     setVolume,
+    // ...wnpState,
+    // dispatch
   };
 
   return (

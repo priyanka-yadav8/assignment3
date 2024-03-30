@@ -168,22 +168,22 @@ const SearchDetails = () => {
     });
     setCombinedCategories(combinedCat);
 
-    const historicalChartResponse = await fetch(
-      `http://localhost:5000/api/stocks/get-historical-chart/${tickerSymbol}`
-    );
-    console.log(historicalChartResponse, "resulttt");
-    setHistoricData(historicalChartResponse.data.results);
-    setOhlc(
-      historicalChartResponse.data.results.map((item) => [
-        item.t,
-        item.o,
-        item.l,
-        item.c,
-      ])
-    );
-    setVolume(
-      historicalChartResponse.data.results.map((item) => [item.t, item.v])
-    );
+    // const historicalChartResponse = await fetch(
+    //   `http://localhost:5000/api/stocks/get-historical-chart/${tickerSymbol}`
+    // );
+    // console.log(historicalChartResponse, "resulttt");
+    // setHistoricData(historicalChartResponse.data.results);
+    // setOhlc(
+    //   historicalChartResponse.data.results.map((item) => [
+    //     item.t,
+    //     item.o,
+    //     item.l,
+    //     item.c,
+    //   ])
+    // );
+    // setVolume(
+    //   historicalChartResponse.data.results.map((item) => [item.t, item.v])
+    // );
 
     setLoadingState(false);
   };
@@ -746,11 +746,11 @@ const SearchDetails = () => {
               </TabPanel>
               <TabPanel value="three" index={2}>
                 <div className="container">
-                  <HighchartsReact
+                  {/* <HighchartsReact
                     highcharts={Highcharts2}
                     constructorType={"stockChart"}
                     options={historicalChart}
-                  />
+                  /> */}
                 </div>
               </TabPanel>
               <TabPanel value="four" index={3}>

@@ -8,6 +8,6 @@ router.route("/get-stock-quote").post(getStocksQuote);
 router.route("/get-company-news").post(getCompanyNews);
 router.route("/get-insights").post(getInsights);
 router.route("/autocomplete/:ticker").get(autoComplete);
-router.route("/get-historical-chart/:ticker").get(getHistoricalChart);
+router.route("/get-historical-chart/:tickerSymbol").get(getHistoricalChart);
 
 export default router;
