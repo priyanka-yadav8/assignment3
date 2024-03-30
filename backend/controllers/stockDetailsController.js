@@ -3,6 +3,8 @@ import axios from "axios";
 // import datetime from datetime;
 
 const FINNHUB_API_KEY = "cn0qd0pr01quegsk27sgcn0qd0pr01quegsk27t0";
+const polygon_api_key = "mSJSt3LvqT9B4jMRKuUNJGx2umldfm2g";
+
 
 const getPreviousWeekday = (date) => {
   let day = date.getDay();
@@ -19,7 +21,11 @@ const getPreviousWeekday = (date) => {
 
 const convertUnixToReadable = (unixTimestamp) => {
   const date = new Date(unixTimestamp * 1000);
-  return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+  return date.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
 };
 
 // Function to format date
@@ -58,7 +64,7 @@ const get_hourly_charts_data = async (symbol, market_status) => {
   let toDate = formatDate(to_date);
   const multiplier = 1;
   const timespan = "hour";
-  const polygon_api_key = "ArQhYRqtoUo6Aq3njzHaI6EH9AscYZwp";
+  // const polygon_api_key = "ArQhYRqtoUo6Aq3njzHaI6EH9AscYZwp";
   const query_string = `adjusted=true&sort=asc&apiKey=${polygon_api_key}`;
 
   const hourly_charts_url = `https://api.polygon.io/v2/aggs/ticker/${symbol}/range/${multiplier}/${timespan}/${fromDate}/${toDate}?${query_string}`;
@@ -71,6 +77,22 @@ const get_hourly_charts_data = async (symbol, market_status) => {
   // console.log(filtered_charts_data);
   return filtered_charts_data;
 };
+
+const getHistoricalChart = asyncHandler(async(req, res)=>{
+    const {ticker} = req.params;
+    const multiplier = "1";
+    const timespan = "day";
+    const toDate = new Date();
+    const fromDate = new Date(toDate.getFullYear() - 2, toDate.getMonth(), toDate.getDate());
+
+    const from = fromDate.toISOString().split('T')[0];
+    const to = toDate.toISOString().split('T')[0];
+    const polygonResponse = await axios.get(
+      `https://api.polygon.io/v2/aggs/ticker/${ticker}/range/${multiplier}/${timespan}/${from}/${to}?adjusted=true&sort=asc&apiKey=${polygon_api_key}`
+    );
+    console.log(polygonResponse.data,"polygonResponse");
+    res.status(200).json(polygonResponse.data);
+});
 
 const getCompanyNews = asyncHandler(async (req, res) => {
   let { symbol } = req.body;
@@ -100,10 +122,10 @@ const getCompanyNews = asyncHandler(async (req, res) => {
           article[key] !== ""
       );
     });
-    console.log("filteredNewsData")
+    console.log("filteredNewsData");
     const response = filteredNewsData.slice(0, 20);
     // console.log(response.length, "length");
-    filteredNewsData.forEach(item => {
+    filteredNewsData.forEach((item) => {
       item.datetime = convertUnixToReadable(item.datetime);
     });
 
@@ -182,7 +204,7 @@ const getInsights = asyncHandler(async (req, res) => {
       recommendation_trends: recommendation_trends_data.data,
       company_earnings_data: updated_earnings_data,
     };
-    console.log("insightssss")
+    console.log("insightssss");
     res.status(200).send(response_obj);
   } catch (error) {
     console.error(error);
@@ -200,111 +222,116 @@ const getStockDetails = asyncHandler(async (req, res) => {
   try {
     const stock_profile_url = `https://finnhub.io/api/v1/stock/profile2?symbol=${symbol}&token=${FINNHUB_API_KEY}`;
     let stock_profile_response = await axios.get(stock_profile_url);
-    // console.log(stock_profile_response.data);
+    console.log(stock_profile_response.data, "stat");
     console.log("stock detailsss");
-    let { ticker, name, exchange, logo, ipo, finnhubIndustry, weburl } =
-      stock_profile_response.data;
+    if (JSON.stringify(stock_profile_response.data) !== "{}") {
+      let { ticker, name, exchange, logo, ipo, finnhubIndustry, weburl } =
+        stock_profile_response.data;
 
-    const stock_quote_url = `https://finnhub.io/api/v1/quote?symbol=${symbol}&token=${FINNHUB_API_KEY}`;
-    let stock_quote_response = await axios.get(stock_quote_url);
-    // console.log(stock_quote_response.data);
-    let { c, d, dp, t, h, l, o, pc } = stock_quote_response.data;
-    dp = parseFloat(dp.toFixed(2));
-    pc = parseFloat(pc.toFixed(2));
-    h = parseFloat(h.toFixed(2));
-    l = parseFloat(l.toFixed(2));
-    o = parseFloat(o.toFixed(2));
+      const stock_quote_url = `https://finnhub.io/api/v1/quote?symbol=${symbol}&token=${FINNHUB_API_KEY}`;
+      let stock_quote_response = await axios.get(stock_quote_url);
+      // console.log(stock_quote_response.status,"stst");
+      let { c, d, dp, t, h, l, o, pc } = stock_quote_response.data;
+      dp = parseFloat(dp.toFixed(2));
+      pc = parseFloat(pc.toFixed(2));
+      h = parseFloat(h.toFixed(2));
+      l = parseFloat(l.toFixed(2));
+      o = parseFloat(o.toFixed(2));
 
-    const company_peers_url = `https://finnhub.io/api/v1/stock/peers?symbol=${symbol}&token=${FINNHUB_API_KEY}`;
-    let company_peers_response = await axios.get(company_peers_url);
-    let unique_peers = [
-      ...new Set(
-        company_peers_response.data.filter((peer) => !peer.includes("."))
-      ),
-    ];
-    let company_peers = unique_peers;
-    // console.log(company_peers, "peers data");
-    console.log(t,"ttttttt");
-    //converting t to required format
-    const date = new Date(t * 1000);
-    const formattedDate =
-      date.getFullYear() +
-      "-" +
-      ("0" + (date.getMonth() + 1)).slice(-2) +
-      "-" +
-      ("0" + date.getDate()).slice(-2) +
-      " " +
-      ("0" + date.getHours()).slice(-2) +
-      ":" +
-      ("0" + date.getMinutes()).slice(-2) +
-      ":" +
-      ("0" + date.getSeconds()).slice(-2);
-    // console.log(t, "t");
+      const company_peers_url = `https://finnhub.io/api/v1/stock/peers?symbol=${symbol}&token=${FINNHUB_API_KEY}`;
+      let company_peers_response = await axios.get(company_peers_url);
+      let unique_peers = [
+        ...new Set(
+          company_peers_response.data.filter((peer) => !peer.includes("."))
+        ),
+      ];
+      let company_peers = unique_peers;
+      // console.log(company_peers, "peers data");
+      console.log(t, "ttttttt");
+      //converting t to required format
+      const date = new Date(t * 1000);
+      const formattedDate =
+        date.getFullYear() +
+        "-" +
+        ("0" + (date.getMonth() + 1)).slice(-2) +
+        "-" +
+        ("0" + date.getDate()).slice(-2) +
+        " " +
+        ("0" + date.getHours()).slice(-2) +
+        ":" +
+        ("0" + date.getMinutes()).slice(-2) +
+        ":" +
+        ("0" + date.getSeconds()).slice(-2);
+      // console.log(t, "t");
 
-    // Get the current date and time
-    const now = new Date();
+      // Get the current date and time
+      const now = new Date();
 
-    // Get the current day of the week (0 is Sunday, 1 is Monday, ..., 6 is Saturday)
-    const dayOfWeek = now.getDay();
-    console.log(dayOfWeek, "dayOfWeek");
+      // Get the current day of the week (0 is Sunday, 1 is Monday, ..., 6 is Saturday)
+      const dayOfWeek = now.getDay();
+      console.log(dayOfWeek, "dayOfWeek");
 
-    // Get the current time in hours and minutes
-    const hours = now.getHours();
-    const minutes = now.getMinutes();
-    console.log(hours, "hours", minutes, "minutes");
+      // Get the current time in hours and minutes
+      const hours = now.getHours();
+      const minutes = now.getMinutes();
+      console.log(hours, "hours", minutes, "minutes");
 
-    // Define market opening and closing times
-    const openingTime = { hours: 6, minutes: 30 }; // 6:30 AM
-    const closingTime = { hours: 13, minutes: 0 }; // 1:00 PM
+      // Define market opening and closing times
+      const openingTime = { hours: 6, minutes: 30 }; // 6:30 AM
+      const closingTime = { hours: 13, minutes: 0 }; // 1:00 PM
 
-    // Convert current time and opening/closing times to minutes for easier comparison
-    const currentTimeInMinutes = hours * 60 + minutes;
-    const openingTimeInMinutes = openingTime.hours * 60 + openingTime.minutes;
-    const closingTimeInMinutes = closingTime.hours * 60 + closingTime.minutes;
+      // Convert current time and opening/closing times to minutes for easier comparison
+      const currentTimeInMinutes = hours * 60 + minutes;
+      const openingTimeInMinutes = openingTime.hours * 60 + openingTime.minutes;
+      const closingTimeInMinutes = closingTime.hours * 60 + closingTime.minutes;
 
-    // Check if the current time is within the market hours (Monday to Friday, between 6:30 AM and 1:00 PM)
-    let market_status = "closed";
-    if (
-      dayOfWeek >= 1 &&
-      dayOfWeek <= 5 && // Monday to Friday
-      currentTimeInMinutes >= openingTimeInMinutes &&
-      currentTimeInMinutes < closingTimeInMinutes
-    ) {
-      market_status = "open";
+      // Check if the current time is within the market hours (Monday to Friday, between 6:30 AM and 1:00 PM)
+      let market_status = "closed";
+      if (
+        dayOfWeek >= 1 &&
+        dayOfWeek <= 5 && // Monday to Friday
+        currentTimeInMinutes >= openingTimeInMinutes &&
+        currentTimeInMinutes < closingTimeInMinutes
+      ) {
+        market_status = "open";
+      }
+
+      const filtered_charts_data = await get_hourly_charts_data(
+        symbol,
+        market_status
+      );
+
+      const res_obj = {
+        stock_details: {
+          ticker: ticker,
+          name: name,
+          exchange: exchange,
+          logo: logo,
+          last_price: c,
+          change: d,
+          change_percentage: dp,
+          current_timestamp: formattedDate,
+          market_status: market_status,
+        },
+        summary: {
+          high_price: h,
+          low_price: l,
+          open_price: o,
+          prev_close: pc,
+        },
+        company_details: {
+          ipo_start_date: ipo,
+          industry: finnhubIndustry,
+          webpage: weburl,
+          company_peers: company_peers,
+        },
+        hourly_charts_data: filtered_charts_data,
+      };
+      res.status(200).json(res_obj);
+    } else{
+      res.status(404).json({message: "No data found. Please enter a valid ticker."});
+
     }
-
-    const filtered_charts_data = await get_hourly_charts_data(
-      symbol,
-      market_status
-    );
-
-    const res_obj = {
-      stock_details: {
-        ticker: ticker,
-        name: name,
-        exchange: exchange,
-        logo: logo,
-        last_price: c,
-        change: d,
-        change_percentage: dp,
-        current_timestamp: formattedDate,
-        market_status: market_status,
-      },
-      summary: {
-        high_price: h,
-        low_price: l,
-        open_price: o,
-        prev_close: pc,
-      },
-      company_details: {
-        ipo_start_date: ipo,
-        industry: finnhubIndustry,
-        webpage: weburl,
-        company_peers: company_peers,
-      },
-      hourly_charts_data: filtered_charts_data,
-    };
-    res.status(200).json(res_obj);
   } catch (error) {
     console.error(error);
     res.status(500).json({
@@ -321,7 +348,7 @@ const getStocksQuote = asyncHandler(async (req, res) => {
     const stock_quote_url = `https://finnhub.io/api/v1/quote?symbol=${symbol}&token=${FINNHUB_API_KEY}`;
     let stock_quote_response = await axios.get(stock_quote_url);
     // console.log(stock_quote_response.data);
-    console.log("stock quotee")
+    console.log("stock quotee");
     let { c, d, dp } = stock_quote_response.data;
     dp = parseFloat(dp.toFixed(2));
     const responseObj = {
@@ -356,11 +383,10 @@ const autoComplete = asyncHandler(async (req, res) => {
         symbol: item.symbol,
       }));
 
-    console.log(filteredResult,"dataaaa");
+    console.log(filteredResult, "dataaaa");
     res.status(200).json({
-      "results" : filteredResult
+      results: filteredResult,
     });
-
   } catch (error) {
     console.error(error);
     res.status(500).json({
@@ -376,4 +402,5 @@ export {
   getInsights,
   getStocksQuote,
   autoComplete,
+  getHistoricalChart
 };

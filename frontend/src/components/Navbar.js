@@ -1,5 +1,7 @@
 import React from 'react';
 import { NavLink, useParams } from 'react-router-dom';
+import { useStockData } from "../contexts/StockDataContext";
+
 
 const Navbar = () => {
     const getNavLinkClass = ({ isActive }) => {
@@ -7,7 +9,7 @@ const Navbar = () => {
         return isActive ? "nav-link border border-light rounded text-white" : "nav-link text-white";
     };
 
-    const {tickerSymbol} = useParams();
+    const {ticker} = useStockData();
     
 
     return (
@@ -25,7 +27,7 @@ const Navbar = () => {
             <div className="collapse navbar-collapse justify-content-end" id="navbarNav">
             <ul className="navbar-nav">
                 <li className="nav-item">
-                <NavLink className={getNavLinkClass} to={tickerSymbol ? `/search/${tickerSymbol}` : `/search/home`}>Search</NavLink>
+                <NavLink className={getNavLinkClass} to={ticker ? `/search/${ticker}` : `/search/home`}>Search</NavLink>
                 </li>
                 <li className="nav-item">
                 <NavLink className={getNavLinkClass} to="/watchlist">Watchlist</NavLink>

@@ -58,6 +58,12 @@ const HomePage = () => {
     // setTickerSymbol(tickerSymbolParam);
   }, [tickerSymbol]);
 
+  const navigateBack = () =>{
+    setTickerSymbol("");
+    setTicker("");
+    navigate(`/search/home`);
+  }
+
   return (
     <div className="container my-5">
       {/* Title */}
@@ -94,7 +100,7 @@ const HomePage = () => {
             <button
               className="btn"
               type="button"
-              onClick={() => setTickerSymbol("")}
+              onClick={() => navigateBack()}
             >
               <i className="bi bi-x-lg"></i>
             </button>

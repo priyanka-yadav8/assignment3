@@ -22,9 +22,11 @@ export const StockDataProvider = ({ children }) => {
   const [surprise, setSurprise] = useState(null);
   const [hours, setHours] = useState(null);
   const [price, setPrice] = useState(null);
+  const [historicData, setHistoricData] = useState(null);
+  const [ohlc, setOhlc] = useState(null);
+  const [volume, setVolume] = useState(null);
 
   // Method to update data
-  
 
   const value = {
     ticker,
@@ -62,6 +64,12 @@ export const StockDataProvider = ({ children }) => {
     setHours,
     price,
     setPrice,
+    historicData,
+    setHistoricData,
+    ohlc,
+    setOhlc,
+    volume,
+    setVolume,
   };
 
   return (

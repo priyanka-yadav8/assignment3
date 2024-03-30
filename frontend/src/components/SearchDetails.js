@@ -11,16 +11,27 @@ import axios from "axios";
 import "../App.css";
 import Highcharts from "highcharts";
 import HighchartsReact from "highcharts-react-official";
+import Highcharts2 from "highcharts/highstock";
 import { IoMdArrowDropup, IoMdArrowDropdown } from "react-icons/io";
 import DisplayNews from "./DisplayNews";
 import HomePage from "./HomePage";
 import Spinner from "react-bootstrap/Spinner";
+
+import HC_more from "highcharts/highcharts-more";
+import HC_indicatorsAll from "highcharts/indicators/indicators-all";
+import HC_vbp from "highcharts/indicators/volume-by-price";
+
+HC_more(Highcharts2);
+HC_indicatorsAll(Highcharts2);
+HC_vbp(Highcharts2);
 
 <head>
   <script src="https://code.highcharts.com/highcharts.js"></script>
   <script src="https://code.highcharts.com/modules/exporting.js"></script>
   <script src="https://code.highcharts.com/modules/export-data.js"></script>
   <script src="https://code.highcharts.com/modules/accessibility.js"></script>
+  <script src="https://code.highcharts.com/modules/stock.js"></script>
+  <script src="https://code.highcharts.com/highstock.js"></script>
 </head>;
 
 const SearchDetails = () => {
@@ -83,10 +94,16 @@ const SearchDetails = () => {
     setHours,
     price,
     setPrice,
+    historicData,
+    setHistoricData,
+    ohlc,
+    setOhlc,
+    volume,
+    setVolume,
   } = useStockData();
 
-
   const updateStockData = async (tickerSymbol) => {
+    setLoadingState(true);
     const requestOptions = {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -98,6 +115,9 @@ const SearchDetails = () => {
       "http://localhost:5000/api/stocks/get-stock-details",
       requestOptions
     );
+    const stockDetailsStatus = stockDetailsResponse.status;
+    if (stockDetailsStatus === 500) {
+    }
     const stockDetailsData = await stockDetailsResponse.json();
     const hourly_charts_data = stockDetailsData.hourly_charts_data;
     setHours(hourly_charts_data.map((item) => item.t));
@@ -141,13 +161,30 @@ const SearchDetails = () => {
     setPeriod2(company_earnings_data.map((item) => item.period));
     setSurprise(company_earnings_data.map((item) => item.surprise));
 
-    const period2_dummy = company_earnings_data.map((item)=>item.period);
-    const surprise_dummy = company_earnings_data.map((item)=>item.surprise);
-    var combinedCat = company_earnings_data.map( function (item, index) {
+    const period2_dummy = company_earnings_data.map((item) => item.period);
+    const surprise_dummy = company_earnings_data.map((item) => item.surprise);
+    var combinedCat = company_earnings_data.map(function (item, index) {
       return item.period + "<br> Surprise: " + item.surprise;
     });
     setCombinedCategories(combinedCat);
-    
+
+    const historicalChartResponse = await fetch(
+      `http://localhost:5000/api/stocks/get-historical-chart/${tickerSymbol}`
+    );
+    console.log(historicalChartResponse, "resulttt");
+    setHistoricData(historicalChartResponse.data.results);
+    setOhlc(
+      historicalChartResponse.data.results.map((item) => [
+        item.t,
+        item.o,
+        item.l,
+        item.c,
+      ])
+    );
+    setVolume(
+      historicalChartResponse.data.results.map((item) => [item.t, item.v])
+    );
+
     setLoadingState(false);
   };
 
@@ -189,7 +226,6 @@ const SearchDetails = () => {
     if (ticker !== tickerSymbolParam) {
       setTicker(tickerSymbolParam);
       updateStockData(tickerSymbolParam);
-      
     }
     console.log(ticker, "ticker after");
 
@@ -201,18 +237,11 @@ const SearchDetails = () => {
         .substring(0, 19);
       setTime(formattedTime);
     };
-    // DisplayChart();
-    updateTime(); // Update time immediately on component mount
-    const intervalId = setInterval(updateTime, 15000); // Then update it every second
+    updateTime();
+    const intervalId = setInterval(updateTime, 15000);
 
-    // Cleanup interval on component unmount
     return () => clearInterval(intervalId);
   }, [tickerSymbolParam, ticker, setTicker, updateStockData]);
-
-  // Function to handle search submission
-  const handleSearch = (searchTicker) => {
-    navigate(`/search/${searchTicker}`);
-  };
 
   const changeColorDisplay = (changeValue) => {
     return changeValue > 0 ? "text-success" : "text-danger";
@@ -419,8 +448,101 @@ const SearchDetails = () => {
     },
   };
 
+  const historicalChart = {
+    chart: {
+      height: 700, // or whatever height you prefer
+    },
+
+    rangeSelector: {
+      selected: 2,
+      buttons: [
+        { type: "month", count: 1, text: "1m" },
+        { type: "month", count: 1, text: "3m" },
+        { type: "month", count: 1, text: "6m" },
+        { type: "ytd", text: "YTD", title: "View year to date" },
+        { type: "year", count: 1, text: "1y" },
+        { type: "all", text: "All" },
+      ],
+      inputEnabled: true,
+    },
+
+    title: {
+      text: `${ticker} Historical`,
+    },
+    subtitle: {
+      text: "With SMA and Volume by Price technical indicators",
+    },
+    xAxis: {
+      type: "datetime",
+      labels: {
+        format: "{value: %e %b}",
+      },
+    },
+    yAxis: [
+      {
+        labels: {
+          align: "right",
+          x: -3,
+        },
+        title: {
+          text: "OHLC",
+        },
+        height: "60%",
+        lineWidth: 2,
+        resize: {
+          enabled: true,
+        },
+      },
+      {
+        labels: {
+          align: "right",
+          x: -3,
+        },
+        title: {
+          text: "Volume",
+        },
+        top: "65%",
+        height: "35%",
+        offset: 0,
+        lineWidth: 2,
+      },
+    ],
+    series: [
+      {
+        type: "candlestick",
+        name: ticker,
+        id: `${ticker}-ohlc`, // unique id for ohlc series
+        zIndex: 2,
+        data: ohlc,
+      },
+      {
+        type: "column",
+        name: "Volume",
+        id: "volume",
+        data: volume,
+        yAxis: 1,
+      },
+      {
+        type: "vbp",
+        linkedTo: `${ticker}-ohlc`, // linking to ohlc series
+        params: { volumeSeriesID: "volume" },
+        dataLabels: { enabled: false },
+        zoneLines: { enabled: false },
+      },
+      {
+        type: "sma",
+        linkedTo: `${ticker}-ohlc`, // linking to ohlc series
+        zIndex: 1,
+        marker: { enabled: false },
+      },
+    ],
+  };
+
   return loadingState ? (
-    <Spinner />
+    <>
+      <HomePage />
+      <Spinner />
+    </>
   ) : (
     <div>
       <HomePage />
@@ -577,7 +699,10 @@ const SearchDetails = () => {
                             </div>
                             <div className="my-2">
                               <b>Webpage : </b>
-                              <a href={stockDetails.company_details.webpage}>
+                              <a
+                                href={stockDetails.company_details.webpage}
+                                target="_blank"
+                              >
                                 {stockDetails.company_details.webpage}
                               </a>
                             </div>
@@ -620,7 +745,13 @@ const SearchDetails = () => {
                 </div>
               </TabPanel>
               <TabPanel value="three" index={2}>
-                <div>Charts Data Goes Here</div>
+                <div className="container">
+                  <HighchartsReact
+                    highcharts={Highcharts2}
+                    constructorType={"stockChart"}
+                    options={historicalChart}
+                  />
+                </div>
               </TabPanel>
               <TabPanel value="four" index={3}>
                 <div className="container">
