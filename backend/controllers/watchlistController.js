@@ -126,7 +126,7 @@ const getStockFromWatchlist = asyncHandler(async (req, res) => {
     await client.connect();
     const database = client.db("HW3");
     const watchlist = database.collection("watchlist");
-    const { ticker } = req.params;
+    let { ticker } = req.params;
     ticker = ticker.toUpperCase();
     const query = { stock: ticker };
     const result = await watchlist.findOne(query);

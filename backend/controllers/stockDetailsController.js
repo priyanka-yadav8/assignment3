@@ -80,6 +80,7 @@ const get_hourly_charts_data = async (symbol, market_status) => {
 
 const getHistoricalChart = asyncHandler(async(req, res)=>{
     const {tickerSymbol} = req.params;
+    console.log(tickerSymbol,"in paramsss");
     const multiplier = "1";
     const timespan = "day";
     const toDate = new Date();
@@ -87,12 +88,16 @@ const getHistoricalChart = asyncHandler(async(req, res)=>{
 
     const from = fromDate.toISOString().split('T')[0];
     const to = toDate.toISOString().split('T')[0];
-    const query_string = `adjusted=true&sort=asc&apiKey=${polygon_api_key}`;
+
+    // const query_string = `adjusted=true&sort=asc&apiKey=${polygon_api_key}`;
     const polygonResponse = await axios.get(`https://api.polygon.io/v2/aggs/ticker/${tickerSymbol}/range/${multiplier}/${timespan}/${from}/${to}?adjusted=true&sort=asc&apiKey=${polygon_api_key}`);
-    // const polygonResponse = await axios.get("https://api.polygon.io/v2/aggs/ticker/AAPL/range/1/day/2022-03-30/2024-03-30?adjusted=true&sort=asc&apiKey=mSJSt3LvqT9B4jMRKuUNJGx2umldfm2g");
+    console.log(polygon_api_key,"polygon_api_key");
     console.log(`https://api.polygon.io/v2/aggs/ticker/${tickerSymbol}/range/${multiplier}/${timespan}/${from}/${to}?adjusted=true&sort=asc&apiKey=${polygon_api_key}`);
     console.log(polygonResponse.data,"polygonResponse");
+    // if(polygonResponse.status == 200){
     res.status(200).json(polygonResponse.data);
+
+    // }
 });
 
 const getCompanyNews = asyncHandler(async (req, res) => {
@@ -225,6 +230,8 @@ const getStockDetails = asyncHandler(async (req, res) => {
     let stock_profile_response = await axios.get(stock_profile_url);
     console.log(stock_profile_response.data, "stat");
     console.log("stock detailsss");
+
+    
     if (JSON.stringify(stock_profile_response.data) !== "{}") {
       let { ticker, name, exchange, logo, ipo, finnhubIndustry, weburl } =
         stock_profile_response.data;

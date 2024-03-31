@@ -43,13 +43,40 @@ const SearchDetails = () => {
   const [dataFetchedBoolean, setDataFetchedBoolean] = useState(false);
   const [loadingState, setLoadingState] = useState(true);
   const [combinedCategories, setCombinedCategories] = useState(null);
+  const [isInWatchlist, setIsInWatchlist] = useState(false);
+  const [graphColor, setGraphColor] = useState("red");
 
   const handleTab = (e, newVal) => {
     setVal(newVal);
   };
 
-  const toggleFill = () => {
-    setStarFill(!starFill); // Toggle the state between true and false
+  const toggleFill = async() => {
+    if(starFill === true){
+      const requestOptions = {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ symbol: tickerSymbolParam }),
+      };
+      const deleteFromWatchlistRes = await fetch(`http://localhost:5000/api/watchlist/remove-from-watchlist`, requestOptions);
+      if(deleteFromWatchlistRes.status ==200){
+        setStarFill(!starFill); // Toggle the state between true and false
+
+      }
+
+    } else {
+      const requestOptions = {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ticker: tickerSymbolParam,
+        name: stockDetails.stock_details.name }),
+      };
+      const addToWatchlistRes = await fetch(`http://localhost:5000/api/watchlist/add-to-watchlist`, requestOptions);
+      if(addToWatchlistRes.status == 200){
+        setStarFill(!starFill);
+      }
+
+    }
+    
   };
 
   const iconStyle = {
@@ -120,7 +147,12 @@ const SearchDetails = () => {
     }
     const stockDetailsData = await stockDetailsResponse.json();
     const hourly_charts_data = stockDetailsData.hourly_charts_data;
-    setHours(hourly_charts_data.map((item) => item.t));
+    setHours(hourly_charts_data.map(item => new Date(item.t).toLocaleTimeString('en-US', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false,
+      timeZone: 'America/Los_Angeles'
+      })));
     setPrice(hourly_charts_data.map((item) => item.c));
     setStockDetails(stockDetailsData);
 
@@ -130,6 +162,12 @@ const SearchDetails = () => {
     );
     const stockQuoteData = await stockQuoteResponse.json();
     setStockQuote(stockQuoteData);
+    if(stockQuoteData.change>=0){
+      setGraphColor("green");
+
+    } else{
+      setGraphColor("red");
+    }
 
     // Fetch and update company news
     const companyNewsResponse = await fetch(
@@ -168,58 +206,38 @@ const SearchDetails = () => {
     });
     setCombinedCategories(combinedCat);
 
-    // const historicalChartResponse = await fetch(
-    //   `http://localhost:5000/api/stocks/get-historical-chart/${tickerSymbol}`
-    // );
-    // console.log(historicalChartResponse, "resulttt");
-    // setHistoricData(historicalChartResponse.data.results);
-    // setOhlc(
-    //   historicalChartResponse.data.results.map((item) => [
-    //     item.t,
-    //     item.o,
-    //     item.l,
-    //     item.c,
-    //   ])
-    // );
-    // setVolume(
-    //   historicalChartResponse.data.results.map((item) => [item.t, item.v])
-    // );
+    const historicalChartResponse = await axios.get(
+      `http://localhost:5000/api/stocks/get-historical-chart/${tickerSymbol}`
+    );
+    console.log(historicalChartResponse, "resulttt");
+    setHistoricData(historicalChartResponse.data.results);
+    setOhlc(
+      historicalChartResponse.data.results.map((item) => [
+        item.t,
+        item.o,
+        item.h,
+        item.l,
+        item.c,
+      ])
+    );
+    setVolume(
+      historicalChartResponse.data.results.map((item) => [item.t, item.v])
+    );
+
+
+    //checking if stock is in watchlist
+    const getStockFromWatchlist = await fetch(`http://localhost:5000/api/watchlist/get-stock-from-watchlist/${tickerSymbol}`);
+    if(getStockFromWatchlist.status == 404){
+      setStarFill(false);
+    } else if(getStockFromWatchlist.status == 200){
+      setStarFill(true);
+    } else {
+      setStarFill(false);
+    }
 
     setLoadingState(false);
   };
 
-  // setTicker(tickerSymbol);
-  // setStockDetails(stockDetails);
-
-  // const fetchStockData = async (tickerSymbol) => {
-  //   const requestOptions = {
-  //     method: 'POST',
-  //     headers: { 'Content-Type': 'application/json' },
-  //     body: JSON.stringify({ symbol: tickerSymbol }),
-  //   };
-
-  //   try {
-  //     const stockDetailsResponse = await fetch('http://localhost:5000/api/stocks/get-stock-details', requestOptions);
-  //     const stockDetailsData = await stockDetailsResponse.json();
-  //     setStockDetails(stockDetailsData);
-
-  //     const companyNewsResponse = await fetch('http://localhost:5000/api/stocks/get-company-news', requestOptions);
-  //     const companyNewsData = await companyNewsResponse.json();
-  //     setCompanyNews(companyNewsData);
-
-  //     const insightsResponse = await fetch('http://localhost:5000/api/stocks/get-insights', requestOptions);
-  //     const insightsData = await insightsResponse.json();
-  //     setInsights(insightsData);
-
-  //     console.log(stockDetailsData,"stockDetailsData");
-  //     console.log(companyNewsData,"companyNewsData");
-  //     console.log(insightsData,"insightsData");
-  //   } catch (error) {
-  //     console.error('Failed to fetch stock data:', error);
-  //   }
-  // };
-
-  // useEffect to make the API calls when the component mounts or the ticker changes
   useEffect(() => {
     console.log(ticker, "ticker");
     console.log(tickerSymbolParam, "tickerSymbol");
@@ -390,62 +408,66 @@ const SearchDetails = () => {
     ],
   };
 
+
+
   const summaryCharts = {
+    chart: {
+      type: 'line',
+      width: 500, // Set the width of the chart
+  },
+  title: {
+      text: `${tickerSymbolParam} Hourly Price Variation`,
+      align: 'center'
+  },
+  xAxis: {
+    type: 'datetime',
+    categories: hours,
+    tickInterval: 5,
+    tickWidth: 1, // Set the tick line width
+    tickLength: 10, // Set the length of the tick marks
+    tickColor: '#666',
+},
+plotOptions: {
+  series: {
+      label: {
+          connectorAllowed: false
+      },
+      pointStart: 2
+  }
+},
+  yAxis: {
     title: {
-      text: `${ticker} Hourly Price Variation`,
-      align: "center",
+        text: '' 
     },
-    xAxis: {
-      categories: hours,
-      tickInterval: 5,
-      tickWidth: 1, // Set the tick line width
-      tickLength: 10, // Set the length of the tick marks
-      tickColor: "#666",
-    },
-    plotOptions: {
-      series: {
-        label: {
-          connectorAllowed: false,
-        },
-        pointStart: 3,
-      },
-    },
-    yAxis: {
-      title: {
-        text: "", // Removes the 'Values' title from the y-axis
-      },
-      opposite: true, // Moves the y-axis to the right side
-    },
-    legend: {
-      layout: "vertical",
-      align: "right",
-      verticalAlign: "middle",
-      enabled: false, // Hides the legend
-    },
-    series: [
-      {
-        data: price,
-        marker: {
-          enabled: false,
-        },
-      },
-    ],
-    responsive: {
-      rules: [
-        {
+    opposite: true 
+  },
+  legend: {
+      layout: 'vertical',
+      align: 'right',
+      verticalAlign: 'middle',
+      enabled: false 
+  },
+  series: [{
+      data: price,
+      color: graphColor,
+      marker: {
+        enabled: false 
+    }
+  }],
+  responsive: {
+      rules: [{
           condition: {
-            maxWidth: 500,
+              maxWidth: 500
           },
           chartOptions: {
-            legend: {
-              layout: "horizontal",
-              align: "center",
-              verticalAlign: "bottom",
-            },
-          },
-        },
-      ],
-    },
+              legend: {
+                  layout: 'horizontal',
+                  align: 'center',
+                  verticalAlign: 'bottom'
+              }
+          }
+      }]
+  }
   };
 
   const historicalChart = {
@@ -746,11 +768,11 @@ const SearchDetails = () => {
               </TabPanel>
               <TabPanel value="three" index={2}>
                 <div className="container">
-                  {/* <HighchartsReact
+                  <HighchartsReact
                     highcharts={Highcharts2}
                     constructorType={"stockChart"}
                     options={historicalChart}
-                  /> */}
+                  />
                 </div>
               </TabPanel>
               <TabPanel value="four" index={3}>
