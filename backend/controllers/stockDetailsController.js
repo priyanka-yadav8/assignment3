@@ -70,7 +70,7 @@ const get_hourly_charts_data = async (symbol, market_status) => {
   const hourly_charts_url = `https://api.polygon.io/v2/aggs/ticker/${symbol}/range/${multiplier}/${timespan}/${fromDate}/${toDate}?${query_string}`;
   let hourly_charts_data = await axios.get(hourly_charts_url);
   console.log(hourly_charts_data.data.resultsCount);
-  const filtered_charts_data = [];
+  let filtered_charts_data = [];
   if(hourly_charts_data.data.resultsCount > 0){
     filtered_charts_data = hourly_charts_data.data.results.map((item) => ({
       c: item.c,
