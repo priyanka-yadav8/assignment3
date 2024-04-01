@@ -42,7 +42,7 @@ const formatDate = (date) => {
 
 const get_hourly_charts_data = async (symbol, market_status) => {
   let from_date, to_date;
-  const now = new Date();
+  let now = new Date();
 
   if (market_status === "open") {
     // Market is open: set from_date to yesterday and to_date to today
@@ -67,7 +67,7 @@ const get_hourly_charts_data = async (symbol, market_status) => {
   // const polygon_api_key = "ArQhYRqtoUo6Aq3njzHaI6EH9AscYZwp";
   const query_string = `adjusted=true&sort=asc&apiKey=${polygon_api_key}`;
 
-  const hourly_charts_url = `https://api.polygon.io/v2/aggs/ticker/${symbol}/range/${multiplier}/${timespan}/${fromDate}/${toDate}?${query_string}`;
+  let hourly_charts_url = `https://api.polygon.io/v2/aggs/ticker/${symbol}/range/${multiplier}/${timespan}/${fromDate}/${toDate}?${query_string}`;
   let hourly_charts_data = await axios.get(hourly_charts_url);
   console.log(hourly_charts_data.data.resultsCount);
   let filtered_charts_data = [];
@@ -231,7 +231,7 @@ const getStockDetails = asyncHandler(async (req, res) => {
   symbol = symbol.toUpperCase();
   console.log(symbol);
   try {
-    const stock_profile_url = `https://finnhub.io/api/v1/stock/profile2?symbol=${symbol}&token=${FINNHUB_API_KEY}`;
+    let stock_profile_url = `https://finnhub.io/api/v1/stock/profile2?symbol=${symbol}&token=${FINNHUB_API_KEY}`;
     let stock_profile_response = await axios.get(stock_profile_url);
     console.log(stock_profile_response.data, "stat");
     console.log("stock detailsss");
@@ -241,7 +241,7 @@ const getStockDetails = asyncHandler(async (req, res) => {
       let { ticker, name, exchange, logo, ipo, finnhubIndustry, weburl } =
         stock_profile_response.data;
 
-      const stock_quote_url = `https://finnhub.io/api/v1/quote?symbol=${symbol}&token=${FINNHUB_API_KEY}`;
+      let stock_quote_url = `https://finnhub.io/api/v1/quote?symbol=${symbol}&token=${FINNHUB_API_KEY}`;
       let stock_quote_response = await axios.get(stock_quote_url);
       // console.log(stock_quote_response.status,"stst");
       let { c, d, dp, t, h, l, o, pc } = stock_quote_response.data;
@@ -251,7 +251,7 @@ const getStockDetails = asyncHandler(async (req, res) => {
       l = parseFloat(l.toFixed(2));
       o = parseFloat(o.toFixed(2));
 
-      const company_peers_url = `https://finnhub.io/api/v1/stock/peers?symbol=${symbol}&token=${FINNHUB_API_KEY}`;
+      let company_peers_url = `https://finnhub.io/api/v1/stock/peers?symbol=${symbol}&token=${FINNHUB_API_KEY}`;
       let company_peers_response = await axios.get(company_peers_url);
       let unique_peers = [
         ...new Set(
@@ -262,8 +262,8 @@ const getStockDetails = asyncHandler(async (req, res) => {
       // console.log(company_peers, "peers data");
       console.log(t, "ttttttt");
       //converting t to required format
-      const date = new Date(t * 1000);
-      const formattedDate =
+      let date = new Date(t * 1000);
+      let formattedDate =
         date.getFullYear() +
         "-" +
         ("0" + (date.getMonth() + 1)).slice(-2) +
@@ -278,25 +278,25 @@ const getStockDetails = asyncHandler(async (req, res) => {
       // console.log(t, "t");
 
       // Get the current date and time
-      const now = new Date();
+      let now = new Date();
 
       // Get the current day of the week (0 is Sunday, 1 is Monday, ..., 6 is Saturday)
-      const dayOfWeek = now.getDay();
+      let dayOfWeek = now.getDay();
       console.log(dayOfWeek, "dayOfWeek");
 
       // Get the current time in hours and minutes
-      const hours = now.getHours();
-      const minutes = now.getMinutes();
+      let hours = now.getHours();
+      let minutes = now.getMinutes();
       console.log(hours, "hours", minutes, "minutes");
 
       // Define market opening and closing times
-      const openingTime = { hours: 6, minutes: 30 }; // 6:30 AM
-      const closingTime = { hours: 13, minutes: 0 }; // 1:00 PM
+      let openingTime = { hours: 6, minutes: 30 }; // 6:30 AM
+      let closingTime = { hours: 13, minutes: 0 }; // 1:00 PM
 
       // Convert current time and opening/closing times to minutes for easier comparison
-      const currentTimeInMinutes = hours * 60 + minutes;
-      const openingTimeInMinutes = openingTime.hours * 60 + openingTime.minutes;
-      const closingTimeInMinutes = closingTime.hours * 60 + closingTime.minutes;
+      let currentTimeInMinutes = hours * 60 + minutes;
+      let openingTimeInMinutes = openingTime.hours * 60 + openingTime.minutes;
+      let closingTimeInMinutes = closingTime.hours * 60 + closingTime.minutes;
 
       // Check if the current time is within the market hours (Monday to Friday, between 6:30 AM and 1:00 PM)
       let market_status = "closed";
@@ -309,12 +309,12 @@ const getStockDetails = asyncHandler(async (req, res) => {
         market_status = "open";
       }
 
-      const filtered_charts_data = await get_hourly_charts_data(
+      let filtered_charts_data = await get_hourly_charts_data(
         symbol,
         market_status
       );
 
-      const res_obj = {
+      let res_obj = {
         stock_details: {
           ticker: ticker,
           name: name,
