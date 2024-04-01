@@ -238,8 +238,8 @@ const getStockDetails = asyncHandler(async (req, res) => {
 
     
     // if (JSON.stringify(stock_profile_response.data) !== "{}") {
-      let { ticker, name, exchange, logo, ipo, finnhubIndustry, weburl } =
-        stock_profile_response.data;
+      // let { ticker, name, exchange, logo, ipo, finnhubIndustry, weburl } =
+        // stock_profile_response.data;
 
       // let stock_quote_url = `https://finnhub.io/api/v1/quote?symbol=${symbol}&token=${FINNHUB_API_KEY}`;
       // let stock_quote_response = await axios.get(stock_quote_url);
@@ -314,33 +314,33 @@ const getStockDetails = asyncHandler(async (req, res) => {
       //   market_status
       // );
 
-      let res_obj = {
-        stock_details: {
-          ticker: ticker,
-          name: name,
-          exchange: exchange,
-          logo: logo,
-          // last_price: c,
-          // change: d,
-          // change_percentage: dp,
-          // current_timestamp: formattedDate,
-          // market_status: market_status,
-        },
-        // summary: {
-        //   high_price: h,
-        //   low_price: l,
-        //   open_price: o,
-        //   prev_close: pc,
-        // },
-        company_details: {
-          ipo_start_date: ipo,
-          industry: finnhubIndustry,
-          webpage: weburl,
-          // company_peers: company_peers,
-        },
-        // hourly_charts_data: filtered_charts_data,
-      };
-      res.status(200).json(res_obj);
+      // let res_obj = {
+      //   stock_details: {
+      //     ticker: ticker,
+      //     name: name,
+      //     exchange: exchange,
+      //     logo: logo,
+      //     // last_price: c,
+      //     // change: d,
+      //     // change_percentage: dp,
+      //     // current_timestamp: formattedDate,
+      //     // market_status: market_status,
+      //   },
+      //   // summary: {
+      //   //   high_price: h,
+      //   //   low_price: l,
+      //   //   open_price: o,
+      //   //   prev_close: pc,
+      //   // },
+      //   // company_details: {
+      //   //   ipo_start_date: ipo,
+      //   //   industry: finnhubIndustry,
+      //   //   webpage: weburl,
+      //     // company_peers: company_peers,
+      //   // },
+      //   // hourly_charts_data: filtered_charts_data,
+      // };
+      res.status(200).json(stock_profile_response.data);
     // } else{
     //   res.status(404).json({message: "No data found. Please enter a valid ticker."});
 
