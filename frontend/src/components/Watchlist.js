@@ -6,6 +6,8 @@ import Spinner from "react-bootstrap/esm/Spinner";
 import Container from "react-bootstrap/esm/Container";
 import { useStockData } from "../contexts/StockDataContext";
 import WatchlistStock from "./WatchlistStock";
+import AlertMessages from "./AlertMessages";
+import serverUrl from "..";
 
 const Watchlist = () => {
   const [loadState, setLoadState] = useState(true);
@@ -19,7 +21,7 @@ const Watchlist = () => {
   useEffect(() => {
     const getWatchlist = async () => {
     const watchlistRes = await fetch(
-      "http://localhost:5000/api/watchlist/get-watchlist"
+      serverUrl+"watchlist/get-watchlist"
     );
     const watchlistData = await watchlistRes.json();
     console.log(watchlistData.watchlist, "dataaaaaaa");
@@ -48,7 +50,7 @@ const Watchlist = () => {
       body: JSON.stringify({ symbol: ticker }),
     };
     const deleteWlistRes = await fetch(
-      "http://localhost:5000/api/watchlist/remove-from-watchlist",
+      serverUrl+"watchlist/remove-from-watchlist",
       requestOptions
     );
 
@@ -59,25 +61,31 @@ const Watchlist = () => {
   };
 
   return (
-    <Col xs={12} md={8} lg={8} className="mx-auto">
+    <Col xs={12} md={8} lg={8} className="mx-auto mt-5">
       <h3 className="my-2">My Watchlist</h3>
       {loadState ? (
         <Spinner />
       ) : doesWatchlistExist && wlist ? (
-        <Container>
+        <div className="mt-5">
           {wlist &&
             wlist.map((item) => (
-              <WatchlistStock
+              <div className="mt-3">
+                <WatchlistStock
                 data={item}
                 deleteFunc={(e) => {
                   e.preventDefault();
                   deleteWlist(item.ticker);
                 }}
               />
+              </div>
+              
             ))}
-        </Container>
+        </div>
       ) : (
         <Card className="bg-light text-center">
+          <AlertMessages 
+            isPositive={true}
+          ></AlertMessages>
           Currently you don't have any stock in your watchlist.
         </Card>
       )}

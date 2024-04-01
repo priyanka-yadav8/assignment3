@@ -44,6 +44,7 @@ export const StockDataProvider = ({ children }) => {
   const [inPortfolio, setInPortfolio] = useState(false);
   const [stockPortfolioData, setStockPortfolioData] = useState(null);
   const [walletAmount, setWalletAmount] = useState(0);
+  const [isEmpty, setIsEmpty] = useState(true);
 
   // const [wnpState, dispatch] = useReducer(
   //   appReducer,
@@ -104,6 +105,8 @@ export const StockDataProvider = ({ children }) => {
     setStockPortfolioData,
     walletAmount,
     setWalletAmount,
+    isEmpty, 
+    setIsEmpty,
     // ...wnpState,
     // dispatch
   };

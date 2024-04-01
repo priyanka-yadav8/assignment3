@@ -22,6 +22,9 @@ import HC_indicatorsAll from "highcharts/indicators/indicators-all";
 import HC_vbp from "highcharts/indicators/volume-by-price";
 import SellPopup from "./SellPopup";
 import BuyPopup from "./BuyPopup";
+import { Container } from "react-bootstrap";
+import AlertMessages from "./AlertMessages";
+import serverUrl from "..";
 
 HC_more(Highcharts2);
 HC_indicatorsAll(Highcharts2);
@@ -52,6 +55,9 @@ const SearchDetails = () => {
   const [sellSuccess, setSellSuccess] = useState(false);
   const [openBuyPopUp, setOpenBuyPopUp] = useState(false);
   const [openSellPopUp, setOpenSellPopUp] = useState(false);
+  const [notTickerValid, setNotTickerValid] = useState(false);
+  const [addedSuccess, setAddedSuccess] = useState(false);
+  // const [showWatchlist]
 
   const handleTab = (e, newVal) => {
     setVal(newVal);
@@ -65,7 +71,7 @@ const SearchDetails = () => {
         body: JSON.stringify({ symbol: tickerSymbolParam }),
       };
       const deleteFromWatchlistRes = await fetch(
-        `http://localhost:5000/api/watchlist/remove-from-watchlist`,
+        serverUrl+`watchlist/remove-from-watchlist`,
         requestOptions
       );
       if (deleteFromWatchlistRes.status == 200) {
@@ -81,17 +87,21 @@ const SearchDetails = () => {
         }),
       };
       const addToWatchlistRes = await fetch(
-        `http://localhost:5000/api/watchlist/add-to-watchlist`,
+        serverUrl+`watchlist/add-to-watchlist`,
         requestOptions
       );
       if (addToWatchlistRes.status == 200) {
         setStarFill(!starFill);
+        setAddedSuccess(true);
+        const interval = setInterval(() => {
+          setAddedSuccess(false);
+        }, 4000);
       }
     }
   };
 
   const iconStyle = {
-    color: starFill ? "yellow" : "currentColor",
+    color: starFill ? "#FFEA00" : "currentColor",
     cursor: "pointer", // Change cursor to pointer to indicate the icon is clickable
   };
 
@@ -157,12 +167,13 @@ const SearchDetails = () => {
 
     // Fetch and update stock details
     const stockDetailsResponse = await fetch(
-      "http://localhost:5000/api/stocks/get-stock-details",
+      serverUrl+"stocks/get-stock-details",
       requestOptions
     );
     const stockDetailsStatus = stockDetailsResponse.status;
     const stockDetailsData = await stockDetailsResponse.json();
     console.log(stockDetailsData, "stock details response");
+    setNotTickerValid(false);
     if (stockDetailsStatus == 200) {
       const hourly_charts_data = stockDetailsData.hourly_charts_data;
       setHours(
@@ -177,109 +188,110 @@ const SearchDetails = () => {
       );
       setPrice(hourly_charts_data.map((item) => item.c));
       setStockDetails(stockDetailsData);
-    }
+      const stockQuoteResponse = await fetch(
+        serverUrl+"stocks/get-stock-quote",
+        requestOptions
+      );
+      if (stockQuoteResponse.status == 200) {
+        const stockQuoteData = await stockQuoteResponse.json();
 
-    const stockQuoteResponse = await fetch(
-      "http://localhost:5000/api/stocks/get-stock-quote",
-      requestOptions
-    );
-    if (stockQuoteResponse.status == 200) {
-      const stockQuoteData = await stockQuoteResponse.json();
-
-      setStockQuote(stockQuoteData);
-      if (stockQuoteData.change >= 0) {
-        setGraphColor("green");
-      } else {
-        setGraphColor("red");
+        setStockQuote(stockQuoteData);
+        if (stockQuoteData.change >= 0) {
+          setGraphColor("green");
+        } else {
+          setGraphColor("red");
+        }
       }
-    }
 
-    // Fetch and update company news
-    const companyNewsResponse = await fetch(
-      "http://localhost:5000/api/stocks/get-company-news",
-      requestOptions
-    );
-    if (companyNewsResponse.status == 200) {
-      const companyNewsData = await companyNewsResponse.json();
-      setCompanyNews(companyNewsData);
-    }
-
-    // Fetch and update insights
-    const insightsResponse = await fetch(
-      "http://localhost:5000/api/stocks/get-insights",
-      requestOptions
-    );
-    // if (insightsResponse == 200) {
-    const insightsData = await insightsResponse.json();
-    setInsights(insightsData);
-    const recommendation_trends = insightsData.recommendation_trends;
-    const company_earnings_data = insightsData.company_earnings_data;
-    setStrongBuy(recommendation_trends.map((item) => item.strongBuy));
-    setStrongSell(recommendation_trends.map((item) => item.strongSell));
-    setSell(recommendation_trends.map((item) => item.sell));
-    setBuy(recommendation_trends.map((item) => item.buy));
-    setHold(recommendation_trends.map((item) => item.hold));
-    setPeriod(recommendation_trends.map((item) => item.period));
-    setActual(company_earnings_data.map((item) => item.actual));
-    setEstimate(company_earnings_data.map((item) => item.estimate));
-    setPeriod2(company_earnings_data.map((item) => item.period));
-    setSurprise(company_earnings_data.map((item) => item.surprise));
-    var combinedCat = company_earnings_data.map(function (item, index) {
-      return item.period + "<br> Surprise: " + item.surprise;
-    });
-    setCombinedCategories(combinedCat);
-    // }
-
-    // const period2_dummy = company_earnings_data.map((item) => item.period);
-    // const surprise_dummy = company_earnings_data.map((item) => item.surprise);
-
-    const historicalChartResponse = await axios.get(
-      `http://localhost:5000/api/stocks/get-historical-chart/${tickerSymbol}`
-    );
-    // const historicalChartData = await historicalChartResponse.json();
-    console.log(historicalChartResponse, "resulttt of chart");
-
-    if (
-      historicalChartResponse.status == 200 &&
-      historicalChartResponse.data.resultsCount > 0
-    ) {
-      setHistoricData(historicalChartResponse.data.results);
-      setOhlc(
-        historicalChartResponse.data.results.map((item) => [
-          item.t,
-          item.o,
-          item.h,
-          item.l,
-          item.c,
-        ])
+      // Fetch and update company news
+      const companyNewsResponse = await fetch(
+        serverUrl+"stocks/get-company-news",
+        requestOptions
       );
-      setVolume(
-        historicalChartResponse.data.results.map((item) => [item.t, item.v])
+      if (companyNewsResponse.status == 200) {
+        const companyNewsData = await companyNewsResponse.json();
+        setCompanyNews(companyNewsData);
+      }
+
+      // Fetch and update insights
+      const insightsResponse = await fetch(
+        serverUrl+"stocks/get-insights",
+        requestOptions
       );
-    }
+      // if (insightsResponse == 200) {
+      const insightsData = await insightsResponse.json();
+      setInsights(insightsData);
+      const recommendation_trends = insightsData.recommendation_trends;
+      const company_earnings_data = insightsData.company_earnings_data;
+      setStrongBuy(recommendation_trends.map((item) => item.strongBuy));
+      setStrongSell(recommendation_trends.map((item) => item.strongSell));
+      setSell(recommendation_trends.map((item) => item.sell));
+      setBuy(recommendation_trends.map((item) => item.buy));
+      setHold(recommendation_trends.map((item) => item.hold));
+      setPeriod(recommendation_trends.map((item) => item.period));
+      setActual(company_earnings_data.map((item) => item.actual));
+      setEstimate(company_earnings_data.map((item) => item.estimate));
+      setPeriod2(company_earnings_data.map((item) => item.period));
+      setSurprise(company_earnings_data.map((item) => item.surprise));
+      var combinedCat = company_earnings_data.map(function (item, index) {
+        return item.period + "<br> Surprise: " + item.surprise;
+      });
+      setCombinedCategories(combinedCat);
+      // }
 
-    //checking if stock is in watchlist
-    const getStockFromWatchlist = await fetch(
-      `http://localhost:5000/api/watchlist/get-stock-from-watchlist/${tickerSymbol}`
-    );
-    if (getStockFromWatchlist.status == 404) {
-      setStarFill(false);
-    } else if (getStockFromWatchlist.status == 200) {
-      setStarFill(true);
-    } else {
-      setStarFill(false);
-    }
+      // const period2_dummy = company_earnings_data.map((item) => item.period);
+      // const surprise_dummy = company_earnings_data.map((item) => item.surprise);
 
-    //checking if stock is in Portfolio
-    const getStockFromPortfolio = await fetch(
-      `http://localhost:5000/api/portfolio/get-one-stock-portfolio/${tickerSymbol}`
-    );
-    const getStockFromPortfolioData = await getStockFromPortfolio.json();
-    if (getStockFromPortfolio.status == 200) {
-      setInPortfolio(true);
-      setStockPortfolioData(getStockFromPortfolioData);
-    } else {
-      setInPortfolio(false);
+      const historicalChartResponse = await axios.get(
+        serverUrl+`stocks/get-historical-chart/${tickerSymbol}`
+      );
+      // const historicalChartData = await historicalChartResponse.json();
+      console.log(historicalChartResponse, "resulttt of chart");
+
+      if (
+        historicalChartResponse.status == 200 &&
+        historicalChartResponse.data.resultsCount > 0
+      ) {
+        setHistoricData(historicalChartResponse.data.results);
+        setOhlc(
+          historicalChartResponse.data.results.map((item) => [
+            item.t,
+            item.o,
+            item.h,
+            item.l,
+            item.c,
+          ])
+        );
+        setVolume(
+          historicalChartResponse.data.results.map((item) => [item.t, item.v])
+        );
+      }
+
+      //checking if stock is in watchlist
+      const getStockFromWatchlist = await fetch(
+        serverUrl+`watchlist/get-stock-from-watchlist/${tickerSymbol}`
+      );
+      if (getStockFromWatchlist.status == 404) {
+        setStarFill(false);
+      } else if (getStockFromWatchlist.status == 200) {
+        setStarFill(true);
+      } else {
+        setStarFill(false);
+      }
+
+      //checking if stock is in Portfolio
+      const getStockFromPortfolio = await fetch(
+        serverUrl+`portfolio/get-one-stock-portfolio/${tickerSymbol}`
+      );
+      const getStockFromPortfolioData = await getStockFromPortfolio.json();
+      if (getStockFromPortfolio.status == 200) {
+        setInPortfolio(true);
+        setStockPortfolioData(getStockFromPortfolioData);
+      } else {
+        setInPortfolio(false);
+      }
+    } else if (stockDetailsStatus == 404) {
+      setNotTickerValid(true);
     }
 
     setLoadingState(false);
@@ -288,11 +300,11 @@ const SearchDetails = () => {
   const updateWalletData = async () => {
     console.log("in update wallet");
     const walletResponse = await fetch(
-      `http://localhost:5000/api/wallet/get-wallet`
+      serverUrl+`wallet/get-wallet`
     );
     const walletData = await walletResponse.json();
     if (walletResponse.status == 200) {
-      console.log(walletData,"wallet amount")
+      console.log(walletData, "wallet amount");
       setWalletAmount(walletData.wallet);
     }
   };
@@ -308,7 +320,6 @@ const SearchDetails = () => {
     }
     // console.log(ticker, "ticker after");
 
-
     const updateTime = () => {
       const now = new Date();
       const formattedTime = now
@@ -323,10 +334,9 @@ const SearchDetails = () => {
     return () => clearInterval(intervalId);
   }, [tickerSymbolParam]);
 
-  useEffect(()=>{
+  useEffect(() => {
     updateWalletData();
-
-  },[])
+  }, []);
 
   const changeColorDisplay = (changeValue) => {
     return changeValue > 0 ? "text-success" : "text-danger";
@@ -648,7 +658,7 @@ const SearchDetails = () => {
       body: JSON.stringify({ cash_balance: new_Wallet }),
     };
     const walletUpdate = await fetch(
-      `http://localhost:5000/api/wallet/update-wallet`,
+      serverUrl+`wallet/update-wallet`,
       requestOptions
     );
     if (walletUpdate.status == 200) {
@@ -656,7 +666,7 @@ const SearchDetails = () => {
     }
 
     if (inPortfolio) {
-      const requestOptions = {
+      const requestOptions2 = {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -666,9 +676,16 @@ const SearchDetails = () => {
       };
 
       const updatePortfolioResponse = await fetch(
-        `http//localhost:5000/api/portfolio/update-portfolio/${ticker}`,
-        requestOptions
+        serverUrl+`portfolio/update-portfolio/${ticker}`,
+        requestOptions2
       );
+
+      setStockPortfolioData({
+        ticker: ticker,
+        name: stockDetails.stock_details.name,
+        quantity: new_Quantity,
+        cost_price: new_Cost_price,
+      });
 
       if (updatePortfolioResponse.status == 200) {
         setBuySuccess(true);
@@ -680,7 +697,7 @@ const SearchDetails = () => {
       }
     } else {
       const requestOptions = {
-        method: "PATCH",
+        method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ticker: ticker,
@@ -690,7 +707,7 @@ const SearchDetails = () => {
         }),
       };
       const addStockToPortfolioRes = await fetch(
-        `http//localhost:5000/api/portfolio/add-to-portfolio`,
+        serverUrl+`portfolio/add-to-portfolio`,
         requestOptions
       );
       const addStockToPortfolioData = await addStockToPortfolioRes.json();
@@ -702,6 +719,7 @@ const SearchDetails = () => {
           cost_price: new_Cost_price,
         };
         setStockPortfolioData(new_stock);
+        setInPortfolio(true);
 
         // let updatedStock = portfolioData ? portfolioData : new_Stock_to_portfolio;
         // updatedStock.quantity = newQuantity;
@@ -734,7 +752,7 @@ const SearchDetails = () => {
     };
 
     const updateWalletRes = await fetch(
-      "http://localhost:5000/api/wallet/update-wallet",
+      serverUrl+"wallet/update-wallet",
       requestOptions
     );
     if (updateWalletRes.status == 200) {
@@ -752,19 +770,23 @@ const SearchDetails = () => {
         }),
       };
       const portfolioPatchRes = await fetch(
-        `http://localhost:5000/api/portfolio/update-portfolio/${stockPortfolioData.ticker}`,
+        serverUrl+`portfolio/update-portfolio/${stockPortfolioData.ticker}`,
         requestOptions
       );
       const portfolioPatchData = await portfolioPatchRes.json();
-      // if (portfolioPatchRes.status == 200) {
-      //   let stock_updated = stock;
-      //   stock_updated.quantity = new_Quantity;
-      //   setPortfolio([
-      //     stock_updated,
-      //     ...portfolio.filter((item) => item.ticker !== stock.ticker),
-      //   ]);
-      //   setFlag(flag + 1);
-      // }
+      const new_stock = {
+        ticker: ticker,
+        name: stockDetails.stock_details.name,
+        quantity: new_Quantity,
+        cost_price: stockPortfolioData.cost_price,
+      };
+      setStockPortfolioData(new_stock);
+      setBuySuccess(false);
+      setSellSuccess(true);
+      const interval = setInterval(() => {
+        setSellSuccess(false);
+      }, 4000);
+      return () => clearInterval(interval);
     } else {
       const requestOptions = {
         method: "DELETE",
@@ -775,27 +797,65 @@ const SearchDetails = () => {
         }),
       };
       const deletePortfolioRes = await fetch(
-        `http://localhost:5000/api/portfolio/remove-from-portfolio/${stockPortfolioData.ticker}`,
+        serverUrl+`portfolio/remove-from-portfolio/${stockPortfolioData.ticker}`,
         requestOptions
       );
-      // if (deletePortfolioRes == 200) {
-      //   setPortfolio(portfolio.filter((item) => item.ticker !== stock.ticker));
-
-      //   setFlag(flag + 1);
-      // }
+      setInPortfolio(false);
+      setStockPortfolioData({});
+      setBuySuccess(false);
+      setSellSuccess(true);
+      const interval = setInterval(() => {
+        setSellSuccess(false);
+      }, 4000);
     }
   };
 
   return loadingState ? (
     <>
       <HomePage />
-      <Spinner />
+      <Container className="mx-auto" style={{ width: "100%" }}>
+        <Spinner />
+      </Container>
+    </>
+  ) : notTickerValid ? (
+    <>
+      <HomePage />
+      <AlertMessages
+        isDismissible={false}
+        isPositive={false}
+        setShow={setNotTickerValid}
+        message={"No data found. Please enter a valid Ticker."}
+      ></AlertMessages>
     </>
   ) : (
     <div>
       <HomePage />
       <div className="container my-5 text-center">
         <div className="row align-items-center">
+          {buySuccess ? (
+            <AlertMessages
+              isPositive={true}
+              isDismissible={true}
+              setShow={setBuySuccess}
+              message={`${ticker} bought successfully`}
+            ></AlertMessages>
+          ) : null}
+          {sellSuccess ? (
+            <AlertMessages
+              isPositive={false}
+              isDismissible={true}
+              setShow={setSellSuccess}
+              message={`${ticker} sold successfully`}
+            ></AlertMessages>
+          ) : null}
+          {addedSuccess ? (
+            <AlertMessages
+              isPositive={true}
+              isDismissible={true}
+              setShow={setAddedSuccess}
+              message={`${ticker} added to Watchlist`}
+            ></AlertMessages>
+          ) : null}
           <div className="col-4">
             <h2>
               {stockDetails.stock_details.ticker}{" "}
@@ -809,11 +869,19 @@ const SearchDetails = () => {
             <h5>{stockDetails && stockDetails.stock_details.name}</h5>
             <h6>{stockDetails && stockDetails.stock_details.exchange}</h6>
             <div>
-              <button className="btn btn-success mx-2" type="button" onClick={()=>setOpenBuyPopUp(true)}>
+              <button
+                className="btn btn-success mx-2"
+                type="button"
+                onClick={() => setOpenBuyPopUp(true)}
+              >
                 Buy
               </button>
               {inPortfolio ? (
-                <button className="btn btn-danger mx-2" type="button" onClick={()=>setOpenSellPopUp(true)}>
+                <button
+                  className="btn btn-danger mx-2"
+                  type="button"
+                  onClick={() => setOpenSellPopUp(true)}
+                >
                   Sell
                 </button>
               ) : (
@@ -1068,7 +1136,9 @@ const SearchDetails = () => {
 
       {openSellPopUp ? (
         <SellPopup
-          close_the_Modal={() => {setOpenSellPopUp(false)}}
+          close_the_Modal={() => {
+            setOpenSellPopUp(false);
+          }}
           isOpen={openSellPopUp}
           handleSubmit={sellOnSearch}
           currentPrice={stockQuote.last_price}

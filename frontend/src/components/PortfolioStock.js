@@ -9,6 +9,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import SellPopup from "./SellPopup";
 import BuyPopup from "./BuyPopup";
+import serverUrl from "..";
 
 const PortfolioStock = ({ data, wallet, buy, sell }) => {
   const [currentPrice, setCurrentPrice] = useState(null);
@@ -32,7 +33,7 @@ const PortfolioStock = ({ data, wallet, buy, sell }) => {
         body: JSON.stringify({ symbol: data.ticker }),
       };
       const response = await fetch(
-        "http://localhost:5000/api/stocks/get-stock-quote/",
+        serverUrl+"stocks/get-stock-quote/",
         requestOptions
       );
       const result = await response.json();

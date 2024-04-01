@@ -147,18 +147,20 @@ footer {
   margin: auto;
 }
 
-.autocomplete-input {
+/* .autocomplete-input {
   border-radius: 20px 0 0 20px;
-}
+} */
 
 .autocomplete-results {
   position: absolute;
-  width: calc(100% - 48px); /* Adjust width based on search button width */
+  width: calc(80% - 40px); /* Adjust width based on search button width */
   top: 100%;
-  left: 0;
+  left: 5%;
   z-index: 1000;
   border-radius: 0 0 5px 5px;
-  overflow: hidden;
+  max-height: 200px; /* Adjust based on your design requirements */
+  overflow-y: auto;
+  overflow-x: hidden;
   box-shadow: 0 4px 6px rgba(32,33,36,0.28);
 }
 

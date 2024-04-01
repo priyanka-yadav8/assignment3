@@ -7,6 +7,8 @@ import "./App.css";
 import reportWebVitals from './reportWebVitals';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
+const serverUrl = "http://localhost:5000/api/";
+export default serverUrl;
 root.render(
   <React.StrictMode>
     <App />

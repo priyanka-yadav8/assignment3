@@ -37,7 +37,7 @@ const SellPopup = ({
             placeholder="0"
           />
         </Form.Group>
-        {currentQuantity > stockData.currentQuantity ? (
+        {currentQuantity > stockData.quantity ? (
           <p className="text-danger">
             You cannot sell stocks that you dont have
           </p>

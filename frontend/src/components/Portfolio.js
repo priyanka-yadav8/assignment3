@@ -6,6 +6,7 @@ import Spinner from "react-bootstrap/esm/Spinner";
 import Container from "react-bootstrap/esm/Container";
 import { useStockData } from "../contexts/StockDataContext";
 import PortfolioStock from "./PortfolioStock";
+import serverUrl from "..";
 
 const Portfolio = () => {
   const [loadState, setLoadState] = useState(true);
@@ -20,7 +21,7 @@ const Portfolio = () => {
   useEffect(() => {
     const getPortfolio = async () => {
       const portfolioRes = await fetch(
-        "http://localhost:5000/api/portfolio/get-portfolio"
+        serverUrl+"portfolio/get-portfolio"
       );
       const portfolioData = await portfolioRes.json();
       console.log(portfolioData.portfolio, "dataaaaaaa");
@@ -40,7 +41,7 @@ const Portfolio = () => {
 
     const getWallet = async () => {
       const walletRes = await fetch(
-        "http://localhost:5000/api/wallet/get-wallet"
+        serverUrl+"wallet/get-wallet"
       );
       const walletData = await walletRes.json();
       if (walletRes.status == 200) {
@@ -63,7 +64,7 @@ const Portfolio = () => {
     };
 
     const updateWalletRes = await fetch(
-      "http://localhost:5000/api/wallet/update-wallet",
+      serverUrl+"wallet/update-wallet",
       requestOptions
     );
     if (updateWalletRes.status == 200) {
@@ -81,7 +82,7 @@ const Portfolio = () => {
         }),
       };
       const portfolioPatchRes = await fetch(
-        `http://localhost:5000/api/portfolio/update-portfolio/${stock.ticker}`,
+        serverUrl+`portfolio/update-portfolio/${stock.ticker}`,
         requestOptions
       );
       const portfolioPatchData = await portfolioPatchRes.data;
@@ -104,7 +105,7 @@ const Portfolio = () => {
         }),
       };
       const deletePortfolioRes = await fetch(
-        `http://localhost:5000/api/portfolio/remove-from-portfolio/${stock.ticker}`,
+        serverUrl+`portfolio/remove-from-portfolio/${stock.ticker}`,
         requestOptions
       );
       if (deletePortfolioRes == 200) {
@@ -129,7 +130,7 @@ const Portfolio = () => {
     };
 
     const response = await fetch(
-      "http://localhost:5000/api/wallet/update-wallet",
+      serverUrl+"wallet/update-wallet",
       requestOptions
     );
     if (response.status == 200) {
@@ -146,7 +147,7 @@ const Portfolio = () => {
         }),
       };
       const response = await fetch(
-        `http://localhost:5000/api/portfolio/update-portfolio/${stock.ticker}`,
+        serverUrl+`portfolio/update-portfolio/${stock.ticker}`,
         requestOptions
       );
       if (response.status == 200) {
@@ -161,26 +162,9 @@ const Portfolio = () => {
     }
   };
 
-  // const deleteWlist = async (ticker) => {
-  //   console.log(ticker, "delete");
-  //   const requestOptions = {
-  //     method: "DELETE",
-  //     headers: { "Content-Type": "application/json" },
-  //     body: JSON.stringify({ symbol: ticker }),
-  //   };
-  //   const deleteWlistRes = await fetch(
-  //     "http://localhost:5000/api/watchlist/remove-from-watchlist",
-  //     requestOptions
-  //   );
-
-  //   if (deleteWlistRes.status == 200) {
-  //     setFlag(flag + 1);
-  //     // setWlist([]);
-  //   }
-  // };
 
   return (
-    <Col xs={12} md={10} lg={8} className="mx-auto">
+    <Col xs={12} md={10} lg={8} className="mx-auto mt-5">
       <h3 className="my-2">My Portfolio</h3>
       {loadState ? (
         <Spinner />
@@ -205,7 +189,7 @@ const Portfolio = () => {
             </Container>
           ) : (
             <Card className="bg-light text-center">
-              Currently you don't have any stock in your watchlist.
+              Currently you don't have any stock in your Portfolio.
             </Card>
           )}
         </Container>

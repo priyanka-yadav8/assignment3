@@ -6,6 +6,7 @@ import { MdClear } from "react-icons/md";
 import { IoMdArrowDropup, IoMdArrowDropdown } from "react-icons/io";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import serverUrl from "..";
 
 const WatchlistStock = ({ data, deleteFunc }) => {
 
@@ -28,7 +29,7 @@ const WatchlistStock = ({ data, deleteFunc }) => {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ symbol: data.ticker }),
               };
-            const response = await fetch('http://localhost:5000/api/stocks/get-stock-quote/', requestOptions);
+            const response = await fetch(serverUrl+'stocks/get-stock-quote/', requestOptions);
             const result = await response.json()
 
             if(response.ok){
