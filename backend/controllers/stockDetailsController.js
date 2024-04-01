@@ -30,7 +30,7 @@ const convertUnixToReadable = (unixTimestamp) => {
 
 // Function to format date
 const formatDate = (date) => {
-  const yyyy = date.getFullYear();
+  let yyyy = date.getFullYear();
   let mm = date.getMonth() + 1; // January is 0!
   let dd = date.getDate();
 
@@ -62,10 +62,10 @@ const get_hourly_charts_data = async (symbol, market_status) => {
 
   let fromDate = formatDate(from_date);
   let toDate = formatDate(to_date);
-  const multiplier = 1;
-  const timespan = "hour";
+  let multiplier = 1;
+  let timespan = "hour";
   // const polygon_api_key = "ArQhYRqtoUo6Aq3njzHaI6EH9AscYZwp";
-  const query_string = `adjusted=true&sort=asc&apiKey=${polygon_api_key}`;
+  let query_string = `adjusted=true&sort=asc&apiKey=${polygon_api_key}`;
 
   let hourly_charts_url = `https://api.polygon.io/v2/aggs/ticker/${symbol}/range/${multiplier}/${timespan}/${fromDate}/${toDate}?${query_string}`;
   let hourly_charts_data = await axios.get(hourly_charts_url);
