@@ -3,7 +3,7 @@ import axios from "axios";
 // import datetime from datetime;
 
 const FINNHUB_API_KEY = "cn0qd0pr01quegsk27sgcn0qd0pr01quegsk27t0";
-const polygon_api_key = "mSJSt3LvqT9B4jMRKuUNJGx2umldfm2g";
+let polygon_api_key = "mSJSt3LvqT9B4jMRKuUNJGx2umldfm2g";
 
 
 const getPreviousWeekday = (date) => {
@@ -20,7 +20,7 @@ const getPreviousWeekday = (date) => {
 };
 
 const convertUnixToReadable = (unixTimestamp) => {
-  const date = new Date(unixTimestamp * 1000);
+  let date = new Date(unixTimestamp * 1000);
   return date.toLocaleDateString("en-US", {
     year: "numeric",
     month: "long",
