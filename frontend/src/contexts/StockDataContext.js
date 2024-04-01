@@ -26,21 +26,24 @@ export const StockDataProvider = ({ children }) => {
   const [companyNews, setCompanyNews] = useState(null);
   const [insights, setInsights] = useState(null);
   const [ticker, setTicker] = useState("");
-  const [strongBuy, setStrongBuy] = useState(null);
-  const [strongSell, setStrongSell] = useState(null);
-  const [buy, setBuy] = useState(null);
-  const [sell, setSell] = useState(null);
-  const [hold, setHold] = useState(null);
-  const [period, setPeriod] = useState(null);
-  const [actual, setActual] = useState(null);
-  const [estimate, setEstimate] = useState(null);
-  const [period2, setPeriod2] = useState(null);
-  const [surprise, setSurprise] = useState(null);
-  const [hours, setHours] = useState(null);
-  const [price, setPrice] = useState(null);
+  const [strongBuy, setStrongBuy] = useState([]);
+  const [strongSell, setStrongSell] = useState([]);
+  const [buy, setBuy] = useState([]);
+  const [sell, setSell] = useState([]);
+  const [hold, setHold] = useState([]);
+  const [period, setPeriod] = useState([]);
+  const [actual, setActual] = useState([]);
+  const [estimate, setEstimate] = useState([]);
+  const [period2, setPeriod2] = useState([]);
+  const [surprise, setSurprise] = useState([]);
+  const [hours, setHours] = useState([]);
+  const [price, setPrice] = useState([]);
   const [historicData, setHistoricData] = useState(null);
-  const [ohlc, setOhlc] = useState(null);
-  const [volume, setVolume] = useState(null);
+  const [ohlc, setOhlc] = useState([]);
+  const [volume, setVolume] = useState([]);
+  const [inPortfolio, setInPortfolio] = useState(false);
+  const [stockPortfolioData, setStockPortfolioData] = useState(null);
+  const [walletAmount, setWalletAmount] = useState(0);
 
   // const [wnpState, dispatch] = useReducer(
   //   appReducer,
@@ -95,6 +98,12 @@ export const StockDataProvider = ({ children }) => {
     setOhlc,
     volume,
     setVolume,
+    inPortfolio,
+    setInPortfolio,
+    stockPortfolioData,
+    setStockPortfolioData,
+    walletAmount,
+    setWalletAmount,
     // ...wnpState,
     // dispatch
   };

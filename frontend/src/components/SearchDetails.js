@@ -20,6 +20,8 @@ import Spinner from "react-bootstrap/Spinner";
 import HC_more from "highcharts/highcharts-more";
 import HC_indicatorsAll from "highcharts/indicators/indicators-all";
 import HC_vbp from "highcharts/indicators/volume-by-price";
+import SellPopup from "./SellPopup";
+import BuyPopup from "./BuyPopup";
 
 HC_more(Highcharts2);
 HC_indicatorsAll(Highcharts2);
@@ -45,38 +47,47 @@ const SearchDetails = () => {
   const [combinedCategories, setCombinedCategories] = useState(null);
   const [isInWatchlist, setIsInWatchlist] = useState(false);
   const [graphColor, setGraphColor] = useState("red");
+  const [showNewsDataModal, setShowNewsDataModal] = useState(false);
+  const [buySuccess, setBuySuccess] = useState(false);
+  const [sellSuccess, setSellSuccess] = useState(false);
+  const [openBuyPopUp, setOpenBuyPopUp] = useState(false);
+  const [openSellPopUp, setOpenSellPopUp] = useState(false);
 
   const handleTab = (e, newVal) => {
     setVal(newVal);
   };
 
-  const toggleFill = async() => {
-    if(starFill === true){
+  const toggleFill = async () => {
+    if (starFill === true) {
       const requestOptions = {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ symbol: tickerSymbolParam }),
       };
-      const deleteFromWatchlistRes = await fetch(`http://localhost:5000/api/watchlist/remove-from-watchlist`, requestOptions);
-      if(deleteFromWatchlistRes.status ==200){
+      const deleteFromWatchlistRes = await fetch(
+        `http://localhost:5000/api/watchlist/remove-from-watchlist`,
+        requestOptions
+      );
+      if (deleteFromWatchlistRes.status == 200) {
         setStarFill(!starFill); // Toggle the state between true and false
-
       }
-
     } else {
       const requestOptions = {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ticker: tickerSymbolParam,
-        name: stockDetails.stock_details.name }),
+        body: JSON.stringify({
+          ticker: tickerSymbolParam,
+          name: stockDetails.stock_details.name,
+        }),
       };
-      const addToWatchlistRes = await fetch(`http://localhost:5000/api/watchlist/add-to-watchlist`, requestOptions);
-      if(addToWatchlistRes.status == 200){
+      const addToWatchlistRes = await fetch(
+        `http://localhost:5000/api/watchlist/add-to-watchlist`,
+        requestOptions
+      );
+      if (addToWatchlistRes.status == 200) {
         setStarFill(!starFill);
       }
-
     }
-    
   };
 
   const iconStyle = {
@@ -127,10 +138,17 @@ const SearchDetails = () => {
     setOhlc,
     volume,
     setVolume,
+    inPortfolio,
+    setInPortfolio,
+    setStockPortfolioData,
+    stockPortfolioData,
+    walletAmount,
+    setWalletAmount,
   } = useStockData();
 
   const updateStockData = async (tickerSymbol) => {
     setLoadingState(true);
+    console.log("in updateStockData");
     const requestOptions = {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -143,30 +161,37 @@ const SearchDetails = () => {
       requestOptions
     );
     const stockDetailsStatus = stockDetailsResponse.status;
-    if (stockDetailsStatus === 500) {
-    }
     const stockDetailsData = await stockDetailsResponse.json();
-    const hourly_charts_data = stockDetailsData.hourly_charts_data;
-    setHours(hourly_charts_data.map(item => new Date(item.t).toLocaleTimeString('en-US', {
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: false,
-      timeZone: 'America/Los_Angeles'
-      })));
-    setPrice(hourly_charts_data.map((item) => item.c));
-    setStockDetails(stockDetailsData);
+    console.log(stockDetailsData, "stock details response");
+    if (stockDetailsStatus == 200) {
+      const hourly_charts_data = stockDetailsData.hourly_charts_data;
+      setHours(
+        hourly_charts_data.map((item) =>
+          new Date(item.t).toLocaleTimeString("en-US", {
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: false,
+            timeZone: "America/Los_Angeles",
+          })
+        )
+      );
+      setPrice(hourly_charts_data.map((item) => item.c));
+      setStockDetails(stockDetailsData);
+    }
 
     const stockQuoteResponse = await fetch(
       "http://localhost:5000/api/stocks/get-stock-quote",
       requestOptions
     );
-    const stockQuoteData = await stockQuoteResponse.json();
-    setStockQuote(stockQuoteData);
-    if(stockQuoteData.change>=0){
-      setGraphColor("green");
+    if (stockQuoteResponse.status == 200) {
+      const stockQuoteData = await stockQuoteResponse.json();
 
-    } else{
-      setGraphColor("red");
+      setStockQuote(stockQuoteData);
+      if (stockQuoteData.change >= 0) {
+        setGraphColor("green");
+      } else {
+        setGraphColor("red");
+      }
     }
 
     // Fetch and update company news
@@ -174,18 +199,19 @@ const SearchDetails = () => {
       "http://localhost:5000/api/stocks/get-company-news",
       requestOptions
     );
-    const companyNewsData = await companyNewsResponse.json();
-    setCompanyNews(companyNewsData);
-    // console.log(companyNewsData,"companyNewsData");
+    if (companyNewsResponse.status == 200) {
+      const companyNewsData = await companyNewsResponse.json();
+      setCompanyNews(companyNewsData);
+    }
 
     // Fetch and update insights
     const insightsResponse = await fetch(
       "http://localhost:5000/api/stocks/get-insights",
       requestOptions
     );
+    // if (insightsResponse == 200) {
     const insightsData = await insightsResponse.json();
     setInsights(insightsData);
-
     const recommendation_trends = insightsData.recommendation_trends;
     const company_earnings_data = insightsData.company_earnings_data;
     setStrongBuy(recommendation_trends.map((item) => item.strongBuy));
@@ -198,54 +224,90 @@ const SearchDetails = () => {
     setEstimate(company_earnings_data.map((item) => item.estimate));
     setPeriod2(company_earnings_data.map((item) => item.period));
     setSurprise(company_earnings_data.map((item) => item.surprise));
-
-    const period2_dummy = company_earnings_data.map((item) => item.period);
-    const surprise_dummy = company_earnings_data.map((item) => item.surprise);
     var combinedCat = company_earnings_data.map(function (item, index) {
       return item.period + "<br> Surprise: " + item.surprise;
     });
     setCombinedCategories(combinedCat);
+    // }
+
+    // const period2_dummy = company_earnings_data.map((item) => item.period);
+    // const surprise_dummy = company_earnings_data.map((item) => item.surprise);
 
     const historicalChartResponse = await axios.get(
       `http://localhost:5000/api/stocks/get-historical-chart/${tickerSymbol}`
     );
-    console.log(historicalChartResponse, "resulttt");
-    setHistoricData(historicalChartResponse.data.results);
-    setOhlc(
-      historicalChartResponse.data.results.map((item) => [
-        item.t,
-        item.o,
-        item.h,
-        item.l,
-        item.c,
-      ])
-    );
-    setVolume(
-      historicalChartResponse.data.results.map((item) => [item.t, item.v])
-    );
+    // const historicalChartData = await historicalChartResponse.json();
+    console.log(historicalChartResponse, "resulttt of chart");
 
+    if (
+      historicalChartResponse.status == 200 &&
+      historicalChartResponse.data.resultsCount > 0
+    ) {
+      setHistoricData(historicalChartResponse.data.results);
+      setOhlc(
+        historicalChartResponse.data.results.map((item) => [
+          item.t,
+          item.o,
+          item.h,
+          item.l,
+          item.c,
+        ])
+      );
+      setVolume(
+        historicalChartResponse.data.results.map((item) => [item.t, item.v])
+      );
+    }
 
     //checking if stock is in watchlist
-    const getStockFromWatchlist = await fetch(`http://localhost:5000/api/watchlist/get-stock-from-watchlist/${tickerSymbol}`);
-    if(getStockFromWatchlist.status == 404){
+    const getStockFromWatchlist = await fetch(
+      `http://localhost:5000/api/watchlist/get-stock-from-watchlist/${tickerSymbol}`
+    );
+    if (getStockFromWatchlist.status == 404) {
       setStarFill(false);
-    } else if(getStockFromWatchlist.status == 200){
+    } else if (getStockFromWatchlist.status == 200) {
       setStarFill(true);
     } else {
       setStarFill(false);
     }
 
+    //checking if stock is in Portfolio
+    const getStockFromPortfolio = await fetch(
+      `http://localhost:5000/api/portfolio/get-one-stock-portfolio/${tickerSymbol}`
+    );
+    const getStockFromPortfolioData = await getStockFromPortfolio.json();
+    if (getStockFromPortfolio.status == 200) {
+      setInPortfolio(true);
+      setStockPortfolioData(getStockFromPortfolioData);
+    } else {
+      setInPortfolio(false);
+    }
+
     setLoadingState(false);
   };
 
-  useEffect(() => {
-    console.log(ticker, "ticker");
-    console.log(tickerSymbolParam, "tickerSymbol");
-    if (ticker !== tickerSymbolParam) {
-      setTicker(tickerSymbolParam);
-      updateStockData(tickerSymbolParam);
+  const updateWalletData = async () => {
+    console.log("in update wallet");
+    const walletResponse = await fetch(
+      `http://localhost:5000/api/wallet/get-wallet`
+    );
+    const walletData = await walletResponse.json();
+    if (walletResponse.status == 200) {
+      console.log(walletData,"wallet amount")
+      setWalletAmount(walletData.wallet);
     }
-    console.log(ticker, "ticker after");
+  };
+
+  useEffect(() => {
+    // console.log(ticker, "ticker");
+    // console.log(tickerSymbolParam, "tickerSymbol");
+    if (ticker !== tickerSymbolParam) {
+      setTicker(tickerSymbolParam.toUpperCase());
+      updateStockData(tickerSymbolParam.toUpperCase());
+    } else if (ticker == tickerSymbolParam) {
+      setLoadingState(false);
+    }
+    // console.log(ticker, "ticker after");
+
 
     const updateTime = () => {
       const now = new Date();
@@ -259,7 +321,12 @@ const SearchDetails = () => {
     const intervalId = setInterval(updateTime, 15000);
 
     return () => clearInterval(intervalId);
-  }, [tickerSymbolParam, ticker, setTicker, updateStockData]);
+  }, [tickerSymbolParam]);
+
+  useEffect(()=>{
+    updateWalletData();
+
+  },[])
 
   const changeColorDisplay = (changeValue) => {
     return changeValue > 0 ? "text-success" : "text-danger";
@@ -327,29 +394,31 @@ const SearchDetails = () => {
       {
         name: "Strong Buy",
         data: strongBuy,
+        color: "#195f32",
       },
       {
         name: "Buy",
         data: buy,
+        color: "#23af50",
       },
       {
         name: "Hold",
         data: hold,
+        color: "#af7d28",
       },
       {
         name: "Sell",
         data: sell,
+        color: "#f05050",
       },
       {
         name: "Strong Sell",
         data: strongSell,
+        color: "#732828",
       },
     ],
   };
 
-  // var combinedCategories = period2.map(function (period, index) {
-  //   return period + "<br> Surprise: " + surprise[index];
-  // });
   const earningsChart = {
     chart: {
       type: "spline",
@@ -408,66 +477,68 @@ const SearchDetails = () => {
     ],
   };
 
-
-
   const summaryCharts = {
     chart: {
-      type: 'line',
+      type: "line",
       width: 500, // Set the width of the chart
-  },
-  title: {
-      text: `${tickerSymbolParam} Hourly Price Variation`,
-      align: 'center'
-  },
-  xAxis: {
-    type: 'datetime',
-    categories: hours,
-    tickInterval: 5,
-    tickWidth: 1, // Set the tick line width
-    tickLength: 10, // Set the length of the tick marks
-    tickColor: '#666',
-},
-plotOptions: {
-  series: {
-      label: {
-          connectorAllowed: false
-      },
-      pointStart: 2
-  }
-},
-  yAxis: {
-    title: {
-        text: '' 
     },
-    opposite: true 
-  },
-  legend: {
-      layout: 'vertical',
-      align: 'right',
-      verticalAlign: 'middle',
-      enabled: false 
-  },
-  series: [{
-      data: price,
-      color: graphColor,
-      marker: {
-        enabled: false 
-    }
-  }],
-  responsive: {
-      rules: [{
+    title: {
+      text: `${tickerSymbolParam} Hourly Price Variation`,
+      align: "center",
+    },
+    xAxis: {
+      type: "datetime",
+      categories: hours,
+      tickInterval: 5,
+      tickWidth: 1, // Set the tick line width
+      tickLength: 10, // Set the length of the tick marks
+      tickColor: "#666",
+    },
+    plotOptions: {
+      series: {
+        label: {
+          connectorAllowed: false,
+        },
+        pointStart: 2,
+      },
+    },
+    yAxis: {
+      title: {
+        text: "",
+      },
+      opposite: true,
+    },
+    legend: {
+      layout: "vertical",
+      align: "right",
+      verticalAlign: "middle",
+      enabled: false,
+    },
+    series: [
+      {
+        data: price,
+        color: graphColor,
+        marker: {
+          enabled: false,
+        },
+      },
+    ],
+    responsive: {
+      rules: [
+        {
           condition: {
-              maxWidth: 500
+            maxWidth: 500,
           },
           chartOptions: {
-              legend: {
-                  layout: 'horizontal',
-                  align: 'center',
-                  verticalAlign: 'bottom'
-              }
-          }
-      }]
-  }
+            legend: {
+              layout: "horizontal",
+              align: "center",
+              verticalAlign: "bottom",
+            },
+          },
+        },
+      ],
+    },
   };
 
   const historicalChart = {
@@ -560,6 +631,161 @@ plotOptions: {
     ],
   };
 
+  const buyOnSearch = async (quantity, price) => {
+    // updateWalletData();
+    const new_Wallet = walletAmount - quantity * price;
+    const new_Quantity =
+      Number(stockPortfolioData ? stockPortfolioData.quantity : 0) +
+      Number(quantity);
+    console.log("new quantity ", new_Quantity);
+    const new_Cost_price = stockPortfolioData
+      ? (Number(stockPortfolioData.cost_price) + Number(price)) / 2
+      : Number(price);
+
+    const requestOptions = {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ cash_balance: new_Wallet }),
+    };
+    const walletUpdate = await fetch(
+      `http://localhost:5000/api/wallet/update-wallet`,
+      requestOptions
+    );
+    if (walletUpdate.status == 200) {
+      updateWalletData();
+    }
+
+    if (inPortfolio) {
+      const requestOptions = {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          quantity: new_Quantity,
+          cost_price: new_Cost_price,
+        }),
+      };
+
+      const updatePortfolioResponse = await fetch(
+        `http//localhost:5000/api/portfolio/update-portfolio/${ticker}`,
+        requestOptions
+      );
+
+      if (updatePortfolioResponse.status == 200) {
+        setBuySuccess(true);
+        setSellSuccess(false);
+        const interval = setInterval(() => {
+          setBuySuccess(false);
+        }, 4000);
+        return () => clearInterval(interval);
+      }
+    } else {
+      const requestOptions = {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ticker: ticker,
+          name: stockDetails.stock_details.name,
+          quantity: new_Quantity,
+          cost_price: new_Cost_price,
+        }),
+      };
+      const addStockToPortfolioRes = await fetch(
+        `http//localhost:5000/api/portfolio/add-to-portfolio`,
+        requestOptions
+      );
+      const addStockToPortfolioData = await addStockToPortfolioRes.json();
+      if (addStockToPortfolioRes.status == 200) {
+        const new_stock = {
+          ticker: ticker,
+          name: stockDetails.stock_details.name,
+          quantity: new_Quantity,
+          cost_price: new_Cost_price,
+        };
+        setStockPortfolioData(new_stock);
+
+        // let updatedStock = portfolioData ? portfolioData : new_Stock_to_portfolio;
+        // updatedStock.quantity = newQuantity;
+        // updatedStock.costprice = newCostprice;
+        // if (portfolio) {
+        //   dispatch({ type: "ADD_PORTFOLIO", payload: updatedStock });
+        // } else {
+        //   setPortfolioContext();
+        // }
+
+        setBuySuccess(true);
+        setSellSuccess(false);
+        const interval = setInterval(() => {
+          setBuySuccess(false);
+        }, 4000);
+        return () => clearInterval(interval);
+      }
+    }
+  };
+
+  const sellOnSearch = async (quantity, price) => {
+    // updateWalletData();
+    const new_Wallet = walletAmount + quantity * price;
+    const new_Quantity = stockPortfolioData.quantity - quantity;
+
+    const requestOptions = {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ cash_balance: new_Wallet }),
+    };
+
+    const updateWalletRes = await fetch(
+      "http://localhost:5000/api/wallet/update-wallet",
+      requestOptions
+    );
+    if (updateWalletRes.status == 200) {
+      console.log("wallet update success");
+      updateWalletData();
+    }
+
+    if (new_Quantity != 0) {
+      const requestOptions = {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          quantity: new_Quantity,
+          cost_price: stockPortfolioData.cost_price,
+        }),
+      };
+      const portfolioPatchRes = await fetch(
+        `http://localhost:5000/api/portfolio/update-portfolio/${stockPortfolioData.ticker}`,
+        requestOptions
+      );
+      const portfolioPatchData = await portfolioPatchRes.json();
+      // if (portfolioPatchRes.status == 200) {
+      //   let stock_updated = stock;
+      //   stock_updated.quantity = new_Quantity;
+      //   setPortfolio([
+      //     stock_updated,
+      //     ...portfolio.filter((item) => item.ticker !== stock.ticker),
+      //   ]);
+      //   setFlag(flag + 1);
+      // }
+    } else {
+      const requestOptions = {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          quantity: new_Quantity,
+          cost_price: stockPortfolioData.cost_price,
+        }),
+      };
+      const deletePortfolioRes = await fetch(
+        `http://localhost:5000/api/portfolio/remove-from-portfolio/${stockPortfolioData.ticker}`,
+        requestOptions
+      );
+      // if (deletePortfolioRes == 200) {
+      //   setPortfolio(portfolio.filter((item) => item.ticker !== stock.ticker));
+
+      //   setFlag(flag + 1);
+      // }
+    }
+  };
+
   return loadingState ? (
     <>
       <HomePage />
@@ -580,37 +806,42 @@ plotOptions: {
               ></i>
             </h2>
 
-            <h5>{stockDetails.stock_details.name}</h5>
-            <h6>{stockDetails.stock_details.exchange}</h6>
+            <h5>{stockDetails && stockDetails.stock_details.name}</h5>
+            <h6>{stockDetails && stockDetails.stock_details.exchange}</h6>
             <div>
-              <button className="btn btn-success mx-2" type="button">
+              <button className="btn btn-success mx-2" type="button" onClick={()=>setOpenBuyPopUp(true)}>
                 Buy
               </button>
-              <button className="btn btn-danger mx-2" type="button">
-                Sell
-              </button>
+              {inPortfolio ? (
+                <button className="btn btn-danger mx-2" type="button" onClick={()=>setOpenSellPopUp(true)}>
+                  Sell
+                </button>
+              ) : (
+                <></>
+              )}
             </div>
           </div>
           <div className="col-4">
             <div className="img-fluid mx-auto d-block">
               <img
-                src={stockDetails.stock_details.logo}
+                src={stockDetails && stockDetails.stock_details.logo}
                 style={{ width: "100px", height: "auto" }}
                 alt="Logo"
               ></img>
             </div>
           </div>
           <div className="col-4">
-            <h2 className={changeColorDisplay(stockQuote.change)}>
+            <h2 className={changeColorDisplay(stockQuote && stockQuote.change)}>
               {stockQuote.last_price}
             </h2>
-            <h4 className={changeColorDisplay(stockQuote.change)}>
-              {stockQuote.change > 0 ? (
+            <h4 className={changeColorDisplay(stockQuote && stockQuote.change)}>
+              {stockQuote && stockQuote.change > 0 ? (
                 <IoMdArrowDropup />
               ) : (
                 <IoMdArrowDropdown />
               )}
-              {stockQuote.change} ({stockQuote.change_percentage} %)
+              {stockQuote && stockQuote.change} (
+              {stockQuote && stockQuote.change_percentage} %)
             </h4>
             <p>{time}</p>
           </div>
@@ -834,6 +1065,37 @@ plotOptions: {
           </div>
         </center>
       </div>
+
+      {openSellPopUp ? (
+        <SellPopup
+          close_the_Modal={() => {setOpenSellPopUp(false)}}
+          isOpen={openSellPopUp}
+          handleSubmit={sellOnSearch}
+          currentPrice={stockQuote.last_price}
+          stockData={stockPortfolioData}
+          wallet={walletAmount}
+        />
+      ) : null}
+
+      {openBuyPopUp ? (
+        <BuyPopup
+          close_the_Modal={() => setOpenBuyPopUp(false)}
+          isOpen={openBuyPopUp}
+          handleSubmit={buyOnSearch}
+          currentPrice={stockQuote.last_price}
+          stockData={
+            stockPortfolioData
+              ? stockPortfolioData
+              : {
+                  ticker: tickerSymbolParam,
+                  name: stockDetails.stock_details.name,
+                  cost_price: 0,
+                  quantity: 0,
+                }
+          }
+          wallet={walletAmount}
+        />
+      ) : null}
     </div>
   );
 };

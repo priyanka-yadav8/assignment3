@@ -129,15 +129,21 @@ const getOneStockPortfolio = asyncHandler(async (req, res) => {
     const database = client.db("HW3");
     const portfolio = database.collection("portfolio");
     let { ticker } = req.params;
-    const query = {"ticker": ticker};
-    const doc =await portfolio.findOne(query);
-    const result = {
-        "ticker": doc.ticker,
-        "name": doc.name,
-        "quantity": doc.quantity,
-        "cost_price": doc.cost_price,
+    ticker = ticker.toUpperCase();
+    const query = { ticker: ticker };
+    const doc = await portfolio.findOne(query);
+    console.log(doc, "doc");
+    if (doc) {
+      const result = {
+        ticker: doc.ticker,
+        name: doc.name,
+        quantity: doc.quantity,
+        cost_price: doc.cost_price,
+      };
+      res.status(200).json(result);
+    } else{
+      res.status(404).json({ message: `${ticker} does not exist in Portfolio`});
     }
-    res.status(200).json(result);
   } catch (error) {
     console.error(error);
     res.status(error.code).json({
@@ -149,4 +155,10 @@ const getOneStockPortfolio = asyncHandler(async (req, res) => {
   }
 });
 
-export { getPortfolio, addToPortfolio, updatePorfolio, removeFromPortfolio, getOneStockPortfolio };
+export {
+  getPortfolio,
+  addToPortfolio,
+  updatePorfolio,
+  removeFromPortfolio,
+  getOneStockPortfolio,
+};

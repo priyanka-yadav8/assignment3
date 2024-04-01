@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { useStockData } from "../contexts/StockDataContext";
 import { useNavigate, useParams } from "react-router-dom";
+// import "../App.css";
+
 
 const HomePage = () => {
   const [tickerSymbol, setTickerSymbol] = useState("");
   const [suggestions, setSuggestions] = useState([]);
-  const { updateStockData, ticker, setTicker } = useStockData();
+  const { ticker, setTicker } = useStockData();
   const navigate = useNavigate();
   const { tickerSymbolParam } = useParams();
 
@@ -58,11 +60,11 @@ const HomePage = () => {
     // setTickerSymbol(tickerSymbolParam);
   }, [tickerSymbol]);
 
-  const navigateBack = () =>{
+  const navigateBack = () => {
     setTickerSymbol("");
     setTicker("");
     navigate(`/search/home`);
-  }
+  };
 
   return (
     <div className="container my-5">
@@ -81,19 +83,22 @@ const HomePage = () => {
               value={tickerSymbol}
               onChange={(e) => setTickerSymbol(e.target.value)}
             />
-            {suggestions.length > 0 && (
-              <ul className="list-group autocomplete-results">
-                {suggestions.map((suggestion, index) => (
-                  <li
-                    key={index}
-                    className="list-group-item"
-                    onClick={() => handleSearchSelect(suggestion.symbol)}
-                  >
-                    {suggestion.symbol} | {suggestion.description}
-                  </li>
-                ))}
-              </ul>
-            )}
+            <div className="add-scroll">
+              {suggestions.length > 0 && (
+                <ul className="list-group autocomplete-results add-scroll">
+                  {suggestions.map((suggestion, index) => (
+                    <li
+                      key={index}
+                      className="list-group-item"
+                      onClick={() => handleSearchSelect(suggestion.symbol)}
+                    >
+                      {suggestion.symbol} | {suggestion.description}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+
             <button className="btn" type="submit">
               <i className="bi bi-search"></i>
             </button>

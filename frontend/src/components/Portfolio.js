@@ -93,26 +93,24 @@ const Portfolio = () => {
           ...portfolio.filter((item) => item.ticker !== stock.ticker),
         ]);
         setFlag(flag + 1);
-      } else {
-        const requestOptions = {
-          method: "DELETE",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            quantity: new_Quantity,
-            cost_price: stock.cost_price,
-          }),
-        };
-        const deletePortfolioRes = await fetch(
-          `http://localhost:5000/api/portfolio/remove-from-portfolio/${stock.ticker}`,
-          requestOptions
-        );
-        if (deletePortfolioRes == 200) {
-          setPortfolio(
-            portfolio.filter((item) => item.ticker !== stock.ticker)
-          );
+      }
+    } else {
+      const requestOptions = {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          quantity: new_Quantity,
+          cost_price: stock.cost_price,
+        }),
+      };
+      const deletePortfolioRes = await fetch(
+        `http://localhost:5000/api/portfolio/remove-from-portfolio/${stock.ticker}`,
+        requestOptions
+      );
+      if (deletePortfolioRes == 200) {
+        setPortfolio(portfolio.filter((item) => item.ticker !== stock.ticker));
 
-          setFlag(flag + 1);
-        }
+        setFlag(flag + 1);
       }
     }
   };
@@ -197,10 +195,10 @@ const Portfolio = () => {
                     data={stock}
                     wallet={wallet}
                     buy={(quantity, price) => {
-                      buyStock(quantity, price, stock)
+                      buyStock(quantity, price, stock);
                     }}
                     sell={(quantity, price) => {
-                      sellStock(quantity, price, stock)
+                      sellStock(quantity, price, stock);
                     }}
                   />
                 ))}

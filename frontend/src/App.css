@@ -172,3 +172,9 @@ footer {
 .list-group-item:hover {
   background-color: #f8f9fa;
 }
+
+.add-scroll{
+  min-height: 50px!important;
+  max-height: 200px!important;
+  overflow-y: auto!important;
+}

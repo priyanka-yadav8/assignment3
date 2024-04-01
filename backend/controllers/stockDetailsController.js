@@ -79,7 +79,8 @@ const get_hourly_charts_data = async (symbol, market_status) => {
 };
 
 const getHistoricalChart = asyncHandler(async(req, res)=>{
-    const {tickerSymbol} = req.params;
+    let {tickerSymbol} = req.params;
+    tickerSymbol = tickerSymbol.toUpperCase();
     console.log(tickerSymbol,"in paramsss");
     const multiplier = "1";
     const timespan = "day";
@@ -93,7 +94,7 @@ const getHistoricalChart = asyncHandler(async(req, res)=>{
     const polygonResponse = await axios.get(`https://api.polygon.io/v2/aggs/ticker/${tickerSymbol}/range/${multiplier}/${timespan}/${from}/${to}?adjusted=true&sort=asc&apiKey=${polygon_api_key}`);
     console.log(polygon_api_key,"polygon_api_key");
     console.log(`https://api.polygon.io/v2/aggs/ticker/${tickerSymbol}/range/${multiplier}/${timespan}/${from}/${to}?adjusted=true&sort=asc&apiKey=${polygon_api_key}`);
-    console.log(polygonResponse.data,"polygonResponse");
+    console.log(polygonResponse.data.resultsCount,"polygonResponse");
     // if(polygonResponse.status == 200){
     res.status(200).json(polygonResponse.data);
 
