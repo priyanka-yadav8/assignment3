@@ -13,7 +13,7 @@ const _dirname = path.dirname("");
 const buildPath = path.join(_dirname, "../frontend/build");
 
 const corsOptions = {
-  origin: ["http://localhost:5000", "http://52.15.200.246/"],
+  origin: ["http://localhost:5000/", "http://52.15.200.246/"],
 };
 dotenv.config();
 app.use(cors(corsOptions));

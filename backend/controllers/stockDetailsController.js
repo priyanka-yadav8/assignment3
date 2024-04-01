@@ -309,10 +309,10 @@ const getStockDetails = asyncHandler(async (req, res) => {
         market_status = "open";
       }
 
-      let filtered_charts_data = await get_hourly_charts_data(
-        symbol,
-        market_status
-      );
+      // let filtered_charts_data = await get_hourly_charts_data(
+      //   symbol,
+      //   market_status
+      // );
 
       let res_obj = {
         stock_details: {
@@ -338,7 +338,7 @@ const getStockDetails = asyncHandler(async (req, res) => {
           webpage: weburl,
           company_peers: company_peers,
         },
-        hourly_charts_data: filtered_charts_data,
+        // hourly_charts_data: filtered_charts_data,
       };
       res.status(200).json(res_obj);
     } else{
