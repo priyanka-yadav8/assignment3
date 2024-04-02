@@ -301,7 +301,7 @@ const SearchDetails = () => {
     const requestOptions = {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ symbol: tickerSymbolParam }),
+      body: JSON.stringify({ symbol: ticker }),
     };
     const stockQuoteResponse = await fetch(
       serverUrl + "stocks/get-stock-quote",
@@ -324,7 +324,7 @@ const SearchDetails = () => {
 
     const interval = setInterval(updateStockQuote, 15000);
     return() => clearInterval(interval);
-  }, [])
+  }, [ticker])
 
   const updateWalletData = async () => {
     console.log("in update wallet");
