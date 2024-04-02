@@ -71,7 +71,7 @@ const SearchDetails = () => {
         body: JSON.stringify({ symbol: tickerSymbolParam }),
       };
       const deleteFromWatchlistRes = await fetch(
-        serverUrl+`watchlist/remove-from-watchlist`,
+        serverUrl + `watchlist/remove-from-watchlist`,
         requestOptions
       );
       if (deleteFromWatchlistRes.status == 200) {
@@ -87,7 +87,7 @@ const SearchDetails = () => {
         }),
       };
       const addToWatchlistRes = await fetch(
-        serverUrl+`watchlist/add-to-watchlist`,
+        serverUrl + `watchlist/add-to-watchlist`,
         requestOptions
       );
       if (addToWatchlistRes.status == 200) {
@@ -167,7 +167,7 @@ const SearchDetails = () => {
 
     // Fetch and update stock details
     const stockDetailsResponse = await fetch(
-      serverUrl+"stocks/get-stock-details",
+      serverUrl + "stocks/get-stock-details",
       requestOptions
     );
     const stockDetailsStatus = stockDetailsResponse.status;
@@ -189,7 +189,7 @@ const SearchDetails = () => {
       setPrice(hourly_charts_data.map((item) => item.c));
       setStockDetails(stockDetailsData);
       const stockQuoteResponse = await fetch(
-        serverUrl+"stocks/get-stock-quote",
+        serverUrl + "stocks/get-stock-quote",
         requestOptions
       );
       if (stockQuoteResponse.status == 200) {
@@ -205,7 +205,7 @@ const SearchDetails = () => {
 
       // Fetch and update company news
       const companyNewsResponse = await fetch(
-        serverUrl+"stocks/get-company-news",
+        serverUrl + "stocks/get-company-news",
         requestOptions
       );
       if (companyNewsResponse.status == 200) {
@@ -215,7 +215,7 @@ const SearchDetails = () => {
 
       // Fetch and update insights
       const insightsResponse = await fetch(
-        serverUrl+"stocks/get-insights",
+        serverUrl + "stocks/get-insights",
         requestOptions
       );
       // if (insightsResponse == 200) {
@@ -243,7 +243,7 @@ const SearchDetails = () => {
       // const surprise_dummy = company_earnings_data.map((item) => item.surprise);
 
       const historicalChartResponse = await axios.get(
-        serverUrl+`stocks/get-historical-chart/${tickerSymbol}`
+        serverUrl + `stocks/get-historical-chart/${tickerSymbol}`
       );
       // const historicalChartData = await historicalChartResponse.json();
       console.log(historicalChartResponse, "resulttt of chart");
@@ -269,7 +269,7 @@ const SearchDetails = () => {
 
       //checking if stock is in watchlist
       const getStockFromWatchlist = await fetch(
-        serverUrl+`watchlist/get-stock-from-watchlist/${tickerSymbol}`
+        serverUrl + `watchlist/get-stock-from-watchlist/${tickerSymbol}`
       );
       if (getStockFromWatchlist.status == 404) {
         setStarFill(false);
@@ -281,7 +281,7 @@ const SearchDetails = () => {
 
       //checking if stock is in Portfolio
       const getStockFromPortfolio = await fetch(
-        serverUrl+`portfolio/get-one-stock-portfolio/${tickerSymbol}`
+        serverUrl + `portfolio/get-one-stock-portfolio/${tickerSymbol}`
       );
       const getStockFromPortfolioData = await getStockFromPortfolio.json();
       if (getStockFromPortfolio.status == 200) {
@@ -297,11 +297,38 @@ const SearchDetails = () => {
     setLoadingState(false);
   };
 
+  const updateStockQuote = async () => {
+    const requestOptions = {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ symbol: tickerSymbolParam }),
+    };
+    const stockQuoteResponse = await fetch(
+      serverUrl + "stocks/get-stock-quote",
+      requestOptions
+    );
+    if (stockQuoteResponse.status == 200) {
+      const stockQuoteData = await stockQuoteResponse.json();
+
+      setStockQuote(stockQuoteData);
+      if (stockQuoteData.change >= 0) {
+        setGraphColor("green");
+      } else {
+        setGraphColor("red");
+      }
+    }
+  };
+
+  useEffect(()=>{
+    updateStockQuote();
+
+    const interval = setInterval(updateStockQuote, 15000);
+    return() => clearInterval(interval);
+  }, [])
+
   const updateWalletData = async () => {
     console.log("in update wallet");
-    const walletResponse = await fetch(
-      serverUrl+`wallet/get-wallet`
-    );
+    const walletResponse = await fetch(serverUrl + `wallet/get-wallet`);
     const walletData = await walletResponse.json();
     if (walletResponse.status == 200) {
       console.log(walletData, "wallet amount");
@@ -658,7 +685,7 @@ const SearchDetails = () => {
       body: JSON.stringify({ cash_balance: new_Wallet }),
     };
     const walletUpdate = await fetch(
-      serverUrl+`wallet/update-wallet`,
+      serverUrl + `wallet/update-wallet`,
       requestOptions
     );
     if (walletUpdate.status == 200) {
@@ -676,7 +703,7 @@ const SearchDetails = () => {
       };
 
       const updatePortfolioResponse = await fetch(
-        serverUrl+`portfolio/update-portfolio/${ticker}`,
+        serverUrl + `portfolio/update-portfolio/${ticker}`,
         requestOptions2
       );
 
@@ -707,7 +734,7 @@ const SearchDetails = () => {
         }),
       };
       const addStockToPortfolioRes = await fetch(
-        serverUrl+`portfolio/add-to-portfolio`,
+        serverUrl + `portfolio/add-to-portfolio`,
         requestOptions
       );
       const addStockToPortfolioData = await addStockToPortfolioRes.json();
@@ -752,7 +779,7 @@ const SearchDetails = () => {
     };
 
     const updateWalletRes = await fetch(
-      serverUrl+"wallet/update-wallet",
+      serverUrl + "wallet/update-wallet",
       requestOptions
     );
     if (updateWalletRes.status == 200) {
@@ -770,7 +797,7 @@ const SearchDetails = () => {
         }),
       };
       const portfolioPatchRes = await fetch(
-        serverUrl+`portfolio/update-portfolio/${stockPortfolioData.ticker}`,
+        serverUrl + `portfolio/update-portfolio/${stockPortfolioData.ticker}`,
         requestOptions
       );
       const portfolioPatchData = await portfolioPatchRes.json();
@@ -797,7 +824,8 @@ const SearchDetails = () => {
         }),
       };
       const deletePortfolioRes = await fetch(
-        serverUrl+`portfolio/remove-from-portfolio/${stockPortfolioData.ticker}`,
+        serverUrl +
+          `portfolio/remove-from-portfolio/${stockPortfolioData.ticker}`,
         requestOptions
       );
       setInPortfolio(false);
