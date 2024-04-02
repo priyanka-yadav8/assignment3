@@ -1,6 +1,6 @@
 import Form from "react-bootstrap/Form";
 import Modal from "react-bootstrap/Modal";
-import Button from "react-bootstrap/button";
+import Button from "react-bootstrap/Button";
 import React, { useState } from "react";
 import Row from "react-bootstrap/esm/Row";
 import Col from "react-bootstrap/esm/Col";

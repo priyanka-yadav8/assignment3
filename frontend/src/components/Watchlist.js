@@ -1,5 +1,8 @@
 import { Button } from "@mui/base";
-import { Card } from "@mui/material";
+// import {  Card } from "@mui/material";
+import Card from "react-bootstrap/esm/Card"
+import Alert from "react-bootstrap/esm/Alert";
+
 import React, { useEffect, useState } from "react";
 import Col from "react-bootstrap/esm/Col";
 import Spinner from "react-bootstrap/esm/Spinner";
@@ -82,12 +85,13 @@ const Watchlist = () => {
             ))}
         </div>
       ) : (
-        <Card className="bg-light text-center">
-          <AlertMessages 
-            isPositive={true}
-          ></AlertMessages>
-          Currently you don't have any stock in your watchlist.
-        </Card>
+        // <Card className="text-center">
+          <Alert style={{backgroundColor : "#fffec8" }}>
+            <div className="text-center">
+              Currently you don't have any stock in your watchlist.
+            </div>
+          </Alert>
+        // </Card>
       )}
     </Col>
   );

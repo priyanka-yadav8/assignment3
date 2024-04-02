@@ -33,7 +33,7 @@ const PortfolioStock = ({ data, wallet, buy, sell }) => {
         body: JSON.stringify({ symbol: data.ticker }),
       };
       const response = await fetch(
-        serverUrl+"stocks/get-stock-quote/",
+        serverUrl + "stocks/get-stock-quote/",
         requestOptions
       );
       const result = await response.json();
@@ -59,7 +59,14 @@ const PortfolioStock = ({ data, wallet, buy, sell }) => {
 
   return (
     <Card className="my-2">
-      <Card.Header>
+      <Card.Header
+        onClick={(e) => {
+          if (e.defaultPrevented) {
+            return;
+          }
+          navigate(`/search/${data.ticker}`);
+        }}
+      >
         <b>{data.ticker}</b>
         <span>{" " + data.name}</span>
       </Card.Header>
@@ -101,8 +108,8 @@ const PortfolioStock = ({ data, wallet, buy, sell }) => {
             close_the_Modal={() => setOpenSellPopup(false)}
             isOpen={openSellPopup}
             handleSubmit={(quantity, price) => {
-                sell(quantity, price, data)
-              }}
+              sell(quantity, price, data);
+            }}
             currentPrice={currentPrice}
             stockData={data}
             wallet={wallet}
@@ -114,8 +121,8 @@ const PortfolioStock = ({ data, wallet, buy, sell }) => {
             close_the_Modal={() => setOpenBuyPopup(false)}
             isOpen={openBuyPopup}
             handleSubmit={(quantity, price) => {
-                buy(quantity, price, data)
-              }}
+              buy(quantity, price, data);
+            }}
             currentPrice={currentPrice}
             stockData={data}
             wallet={wallet}

@@ -175,18 +175,18 @@ const SearchDetails = () => {
     console.log(stockDetailsData, "stock details response");
     setNotTickerValid(false);
     if (stockDetailsStatus == 200) {
-      // const hourly_charts_data = stockDetailsData.hourly_charts_data;
-      // setHours(
-      //   hourly_charts_data.map((item) =>
-      //     new Date(item.t).toLocaleTimeString("en-US", {
-      //       hour: "2-digit",
-      //       minute: "2-digit",
-      //       hour12: false,
-      //       timeZone: "America/Los_Angeles",
-      //     })
-      //   )
-      // );
-      // setPrice(hourly_charts_data.map((item) => item.c));
+      const hourly_charts_data = stockDetailsData.hourly_charts_data;
+      setHours(
+        hourly_charts_data.map((item) =>
+          new Date(item.t).toLocaleTimeString("en-US", {
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: false,
+            timeZone: "America/Los_Angeles",
+          })
+        )
+      );
+      setPrice(hourly_charts_data.map((item) => item.c));
       setStockDetails(stockDetailsData);
       const stockQuoteResponse = await fetch(
         serverUrl+"stocks/get-stock-quote",
