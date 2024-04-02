@@ -20,7 +20,7 @@ dotenv.config();
 app.use(cors());
 
 app.use(express.json());
-app.use(express.static(buildPath));
+// app.use(express.static(buildPath));
 
 app.get("/", (req, res) => {
   res.send("App is running...");
