@@ -1,0 +1,16 @@
+runtime: nodejs20
+
+env: standard
+
+entrypoint: npm start
+
+handlers:
+  - url: /(.*\.(json|ico|js|png|jpg|css|txt|map|svg|gif|woff|woff2|ttf|otf|eot))
+    static_files: build/\1
+    upload: build/(.*\.(json|ico|js|png|jpg|css|txt|map|svg|gif|woff|woff2|ttf|otf|eot))
+    secure: always
+
+  - url: /.*
+    static_files: build/index.html
+    upload: build/index.html
+    secure: always
