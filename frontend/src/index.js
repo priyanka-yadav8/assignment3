@@ -8,7 +8,8 @@ import reportWebVitals from './reportWebVitals';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 // const serverUrl = "http://52.15.200.246/api/";
-const serverUrl = "http://localhost:5000/api/";
+// const serverUrl = "http://localhost:5000/api/";
+const serverUrl = "https://priyanka-webtech3.wl.r.appspot.com/api";
 
 export default serverUrl;
 root.render(
