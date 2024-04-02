@@ -3,7 +3,7 @@ import axios from "axios";
 // import datetime from datetime;
 
 const FINNHUB_API_KEY = "cn0qd0pr01quegsk27sgcn0qd0pr01quegsk27t0";
-let polygon_api_key = "mSJSt3LvqT9B4jMRKuUNJGx2umldfm2g";
+const polygon_api_key = "mSJSt3LvqT9B4jMRKuUNJGx2umldfm2g";
 
 
 const getPreviousWeekday = (date) => {
@@ -237,114 +237,114 @@ const getStockDetails = asyncHandler(async (req, res) => {
     console.log("stock detailsss");
 
     
-    // if (JSON.stringify(stock_profile_response.data) !== "{}") {
-      // let { ticker, name, exchange, logo, ipo, finnhubIndustry, weburl } =
-        // stock_profile_response.data;
+    if (JSON.stringify(stock_profile_response.data) !== "{}") {
+      let { ticker, name, exchange, logo, ipo, finnhubIndustry, weburl } =
+        stock_profile_response.data;
 
-      // let stock_quote_url = `https://finnhub.io/api/v1/quote?symbol=${symbol}&token=${FINNHUB_API_KEY}`;
-      // let stock_quote_response = await axios.get(stock_quote_url);
-      // console.log(stock_quote_response.status,"stst");
-      // let { c, d, dp, t, h, l, o, pc } = stock_quote_response.data;
-      // dp = parseFloat(dp.toFixed(2));
-      // pc = parseFloat(pc.toFixed(2));
-      // h = parseFloat(h.toFixed(2));
-      // l = parseFloat(l.toFixed(2));
-      // o = parseFloat(o.toFixed(2));
+      let stock_quote_url = `https://finnhub.io/api/v1/quote?symbol=${symbol}&token=${FINNHUB_API_KEY}`;
+      let stock_quote_response = await axios.get(stock_quote_url);
+      console.log(stock_quote_response.status,"stst");
+      let { c, d, dp, t, h, l, o, pc } = stock_quote_response.data;
+      dp = parseFloat(dp.toFixed(2));
+      pc = parseFloat(pc.toFixed(2));
+      h = parseFloat(h.toFixed(2));
+      l = parseFloat(l.toFixed(2));
+      o = parseFloat(o.toFixed(2));
 
-      // let company_peers_url = `https://finnhub.io/api/v1/stock/peers?symbol=${symbol}&token=${FINNHUB_API_KEY}`;
-      // let company_peers_response = await axios.get(company_peers_url);
-      // let unique_peers = [
-      //   ...new Set(
-      //     company_peers_response.data.filter((peer) => !peer.includes("."))
-      //   ),
-      // ];
-      // let company_peers = unique_peers;
-      // console.log(company_peers, "peers data");
-      // console.log(t, "ttttttt");
-      //converting t to required format
-      // let date = new Date(t * 1000);
-      // let formattedDate =
-      //   date.getFullYear() +
-      //   "-" +
-      //   ("0" + (date.getMonth() + 1)).slice(-2) +
-      //   "-" +
-      //   ("0" + date.getDate()).slice(-2) +
-      //   " " +
-      //   ("0" + date.getHours()).slice(-2) +
-      //   ":" +
-      //   ("0" + date.getMinutes()).slice(-2) +
-      //   ":" +
-      //   ("0" + date.getSeconds()).slice(-2);
-      // console.log(t, "t");
+      let company_peers_url = `https://finnhub.io/api/v1/stock/peers?symbol=${symbol}&token=${FINNHUB_API_KEY}`;
+      let company_peers_response = await axios.get(company_peers_url);
+      let unique_peers = [
+        ...new Set(
+          company_peers_response.data.filter((peer) => !peer.includes("."))
+        ),
+      ];
+      let company_peers = unique_peers;
+      console.log(company_peers, "peers data");
+      console.log(t, "ttttttt");
+      // converting t to required format
+      let date = new Date(t * 1000);
+      let formattedDate =
+        date.getFullYear() +
+        "-" +
+        ("0" + (date.getMonth() + 1)).slice(-2) +
+        "-" +
+        ("0" + date.getDate()).slice(-2) +
+        " " +
+        ("0" + date.getHours()).slice(-2) +
+        ":" +
+        ("0" + date.getMinutes()).slice(-2) +
+        ":" +
+        ("0" + date.getSeconds()).slice(-2);
+      console.log(t, "t");
 
       // Get the current date and time
-      // let now = new Date();
+      let now = new Date();
 
       // Get the current day of the week (0 is Sunday, 1 is Monday, ..., 6 is Saturday)
-      // let dayOfWeek = now.getDay();
-      // console.log(dayOfWeek, "dayOfWeek");
+      let dayOfWeek = now.getDay();
+      console.log(dayOfWeek, "dayOfWeek");
 
       // Get the current time in hours and minutes
-      // let hours = now.getHours();
-      // let minutes = now.getMinutes();
-      // console.log(hours, "hours", minutes, "minutes");
+      let hours = now.getHours();
+      let minutes = now.getMinutes();
+      console.log(hours, "hours", minutes, "minutes");
 
       // Define market opening and closing times
-      // let openingTime = { hours: 6, minutes: 30 }; // 6:30 AM
-      // let closingTime = { hours: 13, minutes: 0 }; // 1:00 PM
+      let openingTime = { hours: 6, minutes: 30 }; // 6:30 AM
+      let closingTime = { hours: 13, minutes: 0 }; // 1:00 PM
 
       // Convert current time and opening/closing times to minutes for easier comparison
-      // let currentTimeInMinutes = hours * 60 + minutes;
-      // let openingTimeInMinutes = openingTime.hours * 60 + openingTime.minutes;
-      // let closingTimeInMinutes = closingTime.hours * 60 + closingTime.minutes;
+      let currentTimeInMinutes = hours * 60 + minutes;
+      let openingTimeInMinutes = openingTime.hours * 60 + openingTime.minutes;
+      let closingTimeInMinutes = closingTime.hours * 60 + closingTime.minutes;
 
       // Check if the current time is within the market hours (Monday to Friday, between 6:30 AM and 1:00 PM)
-      // let market_status = "closed";
-      // if (
-      //   dayOfWeek >= 1 &&
-      //   dayOfWeek <= 5 && // Monday to Friday
-      //   currentTimeInMinutes >= openingTimeInMinutes &&
-      //   currentTimeInMinutes < closingTimeInMinutes
-      // ) {
-      //   market_status = "open";
-      // }
+      let market_status = "closed";
+      if (
+        dayOfWeek >= 1 &&
+        dayOfWeek <= 5 && // Monday to Friday
+        currentTimeInMinutes >= openingTimeInMinutes &&
+        currentTimeInMinutes < closingTimeInMinutes
+      ) {
+        market_status = "open";
+      }
 
-      // let filtered_charts_data = await get_hourly_charts_data(
-      //   symbol,
-      //   market_status
-      // );
+      let filtered_charts_data = await get_hourly_charts_data(
+        symbol,
+        market_status
+      );
 
-      // let res_obj = {
-      //   stock_details: {
-      //     ticker: ticker,
-      //     name: name,
-      //     exchange: exchange,
-      //     logo: logo,
-      //     // last_price: c,
-      //     // change: d,
-      //     // change_percentage: dp,
-      //     // current_timestamp: formattedDate,
-      //     // market_status: market_status,
-      //   },
-      //   // summary: {
-      //   //   high_price: h,
-      //   //   low_price: l,
-      //   //   open_price: o,
-      //   //   prev_close: pc,
-      //   // },
-      //   // company_details: {
-      //   //   ipo_start_date: ipo,
-      //   //   industry: finnhubIndustry,
-      //   //   webpage: weburl,
-      //     // company_peers: company_peers,
-      //   // },
-      //   // hourly_charts_data: filtered_charts_data,
-      // };
-      res.status(200).json(stock_profile_response.data);
-    // } else{
-    //   res.status(404).json({message: "No data found. Please enter a valid ticker."});
+      let res_obj = {
+        stock_details: {
+          ticker: ticker,
+          name: name,
+          exchange: exchange,
+          logo: logo,
+          last_price: c,
+          change: d,
+          change_percentage: dp,
+          current_timestamp: formattedDate,
+          market_status: market_status,
+        },
+        summary: {
+          high_price: h,
+          low_price: l,
+          open_price: o,
+          prev_close: pc,
+        },
+        company_details: {
+          ipo_start_date: ipo,
+          industry: finnhubIndustry,
+          webpage: weburl,
+          company_peers: company_peers,
+        },
+        hourly_charts_data: filtered_charts_data,
+      };
+      res.status(200).json(res_obj);
+    } else{
+      res.status(404).json({message: "No data found. Please enter a valid ticker."});
 
-    // }
+    }
   } catch (error) {
     console.error(error);
     res.status(500).json({
